@@ -18,6 +18,7 @@
     --ok-bg:#16302a; --warn-bg:#352a17; --bad-bg:#3a1d1a; color-scheme:dark; }
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0;background:var(--bg);color:var(--fg);
   font:15px/1.5 -apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}
 .wrap{max-width:980px;margin:0 auto;padding-block:16px 40px;
@@ -81,6 +82,42 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
 .causes .row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:6px 8px;border-radius:6px;background:var(--soft)}
 .causes .row b{font-variant-numeric:tabular-nums}
 .empty{color:var(--muted);font-size:.88rem}
+/* 引導 */
+.pactions{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
+.pactions button.primary{padding:12px 18px;font-size:1rem}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(10,16,13,.55);display:grid;place-items:center;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.sheet{background:var(--panel);color:var(--fg);border-radius:14px;width:min(560px,100%);max-height:100%;overflow:auto;padding:18px;display:grid;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.g-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.g-top span{font-size:.82rem;color:var(--muted);font-weight:600}
+.g-top button{padding:6px 10px;border:none;background:var(--soft)}
+.g-prog{display:flex;gap:6px}
+.g-prog i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.g-prog i.on{background:var(--accent)}
+.g-num{font-size:.8rem;color:var(--accent);font-weight:700;letter-spacing:.04em}
+.g-title{font-size:1.35rem;font-weight:700;margin:2px 0 0;text-wrap:balance}
+.g-desc{margin:6px 0 0;font-size:1rem;line-height:1.6}
+.g-ill{border-radius:10px;background:var(--soft);padding:14px;display:grid;place-items:center;min-height:90px}
+.g-ill svg{max-width:100%;height:auto;color:var(--fg)}
+.crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;justify-content:center}
+.crumbs span{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:.95rem;font-weight:600}
+.crumbs span.last{background:var(--accent);border-color:var(--accent);color:#fff}
+.crumbs em{font-style:normal;color:var(--muted);font-size:1.1rem}
+.g-live{width:100%;display:grid;gap:8px}
+.g-live .big{font-size:2.2rem;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+.g-live .bar{height:12px;border-radius:6px}
+.g-live .hint{text-align:center;font-size:.9rem;font-weight:600}
+.g-live .hint.good{color:var(--ok)} .g-live .hint.bad{color:var(--bad)}
+.g-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.g-actions button{padding:12px 18px;font-size:1rem}
+.g-actions .grow{margin-right:auto}
+.g-result{text-align:center;display:grid;gap:8px;justify-items:center}
+.g-result .mark{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-size:2rem;color:#fff;font-weight:700}
+.g-result .mark.ok{background:var(--ok)} .g-result .mark.bad{background:var(--bad)} .g-result .mark.wait{background:var(--muted)}
+.spin{width:44px;height:44px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--accent);animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.spin{animation-duration:3s}}
+.urlbox{font-family:var(--mono);font-size:.9rem;background:var(--soft);padding:8px 10px;border-radius:8px;word-break:break-all}
 .log{max-height:360px;overflow:auto;font-family:var(--mono);font-size:.8rem;border-top:1px solid var(--line)}
 .log div{padding:6px 2px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:auto 1fr;gap:10px}
 .log time{color:var(--muted)}
@@ -100,7 +137,17 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
     <p class="why" id="pWhy" hidden></p>
     <p class="steps-h" id="pStepsH" hidden>可以嘗試的辦法</p>
     <ol id="pSteps" hidden></ol>
+    <div class="pactions"><button class="primary" id="guideBtn" hidden>一步一步帶我解決</button></div>
   </section>
+
+  <div class="modal" id="guide" hidden role="dialog" aria-modal="true" aria-labelledby="gTitle">
+    <div class="sheet">
+      <div class="g-top"><span id="gProb"></span><button id="gClose" aria-label="關閉引導">✕ 關閉</button></div>
+      <div class="g-prog" id="gProg"></div>
+      <div id="gBody"></div>
+      <div class="g-actions" id="gActions"></div>
+    </div>
+  </div>
 
   <section class="panel">
     <h2>環境檢查</h2>
@@ -173,66 +220,147 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   const UA = navigator.userAgent;
   const isIOS = /iPad|iPhone|iPod/.test(UA) || (/Macintosh/.test(UA) && navigator.maxTouchPoints > 1);
 
-  // ===== 問題定義：標題、說明、處理步驟 =====
+  // ===== 問題定義：標題、說明、引導步驟 =====
+  // 步驟格式：{ t:標題, d:說明, path:[設定路徑], live:'luma'|'move', icon }
+  const S = (t, d, path, extra) => Object.assign({ t, d, path }, extra || {});
   const CAUSES = {
-    insecure:  { lv:'bad', name:'網址不安全，無法使用相機',
+    insecure:  { lv:'bad', name:'網址不安全，無法使用相機', verify:'reopen',
       what:'瀏覽器只允許 https:// 開頭的網址使用相機。',
-      steps:['確認網址是 https://hby0413.github.io/camera-test/','不要用「下載後開啟檔案」的方式打開'] },
-    inapp:     { lv:'bad', name:'在 App 內建瀏覽器開啟',
+      steps:[
+        S('確認網址', '網址列要顯示下面這個網址，開頭必須是 https://', ['https://hby0413.github.io/camera-test/']),
+        S('不要用檔案方式開啟', '如果是從下載的檔案打開，請改成直接在瀏覽器輸入上面的網址。'),
+      ] },
+    inapp:     { lv:'bad', name:'在 App 內建瀏覽器開啟', verify:'reopen',
       what:'LINE、Facebook、Instagram 等 App 內建的瀏覽器常常不能用相機，或很容易被中斷。',
-      steps:['點右上角「⋯」或分享按鈕','選「用 Safari 開啟」或「用 Chrome 開啟」','在 Safari / Chrome 裡重新檢測'] },
-    nosupport: { lv:'bad', name:'瀏覽器不支援相機',
+      steps:[
+        S('找到右上角的選單', '在畫面右上角或右下角，找「⋯」或分享圖示，點一下。', null, { icon:'menu' }),
+        S('選擇用瀏覽器開啟', isIOS ? '選「用 Safari 開啟」或「以預設瀏覽器開啟」。' : '選「用 Chrome 開啟」或「以瀏覽器開啟」。', ['⋯', isIOS ? '用 Safari 開啟' : '用 Chrome 開啟']),
+        S('在新開的瀏覽器重新檢測', '頁面打開後，按「開始檢測」並允許使用相機。'),
+      ] },
+    nosupport: { lv:'bad', name:'瀏覽器不支援相機', verify:'reopen',
       what:'這個瀏覽器或系統版本太舊，無法在網頁上使用相機。',
-      steps:['改用 Safari（iPad）或 Chrome（Android）','到「設定 → 一般 → 軟體更新」更新系統'] },
-    perm:      { lv:'bad', name:'相機權限被拒絕或關閉',
+      steps:[
+        S('改用內建瀏覽器', isIOS ? '請改用 iPad 內建的 Safari 開啟這個網址。' : '請改用 Chrome 開啟這個網址。'),
+        S('更新系統', '把系統更新到最新版本後再試一次。', isIOS ? ['設定','一般','軟體更新'] : ['設定','系統','軟體更新']),
+      ] },
+    perm:      { lv:'bad', name:'相機權限被拒絕或關閉', verify:'camera',
       what:'瀏覽器或系統不允許這個網頁使用相機。',
-      steps: isIOS
-        ? ['點網址列左邊的「大小」圖示 →「網站設定」→ 相機 → 允許','或到 設定 → Safari → 相機 → 改成「允許」或「詢問」','到 設定 → 螢幕使用時間 → 內容與隱私權限制，確認相機沒有被關閉','重新整理頁面後再按「開始檢測」']
-        : ['點網址列左邊的鎖頭圖示 → 權限 → 相機 → 允許','到 設定 → 應用程式 → Chrome → 權限 → 相機 → 允許','重新整理頁面後再按「開始檢測」'] },
-    missing:   { lv:'bad', name:'找不到相機',
+      steps: isIOS ? [
+        S('打開網站設定', '點網址列左邊的「大小」圖示（aA），再點「網站設定」。', ['aA','網站設定','相機','允許'], { icon:'aa' }),
+        S('檢查 Safari 的相機設定', '如果上一步找不到，到系統設定裡把相機改成「允許」或「詢問」。', ['設定','Safari','相機','允許']),
+        S('檢查螢幕使用時間限制', '確認相機沒有被家長控制或公司設定關閉。', ['設定','螢幕使用時間','內容與隱私權限制','允許的 App','相機 開啟']),
+        S('重新整理這個頁面', '回到這頁，往下拉重新整理，或點網址列旁的重新整理按鈕。'),
+      ] : [
+        S('打開網站權限', '點網址列左邊的鎖頭或設定圖示，找到「權限」。', ['🔒','權限','相機','允許'], { icon:'lock' }),
+        S('檢查 Chrome 的相機權限', '如果上一步沒有相機選項，到系統設定裡打開。', ['設定','應用程式','Chrome','權限','相機','允許']),
+        S('重新整理這個頁面', '回到這頁，點網址列旁的重新整理按鈕。'),
+      ] },
+    missing:   { lv:'bad', name:'找不到相機', verify:'camera',
       what:'系統回報沒有可用的鏡頭。可能是鏡頭硬體故障、排線鬆脫，或系統沒有偵測到。',
-      steps:['打開內建「相機」App，確認前後鏡頭都能正常顯示','完全關機再開機（不是只鎖螢幕）','更新系統版本','如果內建相機 App 也打不開，就是硬體問題，需要送修'] },
-    busy:      { lv:'bad', name:'相機被其他 App 占用',
+      steps:[
+        S('用內建相機 App 測試', '打開內建「相機」App，切換前後鏡頭，看看能不能正常顯示畫面。', ['相機 App','切換前 / 後鏡頭']),
+        S('完全關機再開機', isIOS ? '同時按住電源鍵和音量鍵，滑動關機，等 30 秒再開機。' : '長按電源鍵選「關機」，等 30 秒再開機。'),
+        S('更新系統', '把系統更新到最新版本。', isIOS ? ['設定','一般','軟體更新'] : ['設定','系統','軟體更新']),
+      ],
+      fail:'如果內建相機 App 也打不開，代表鏡頭硬體有問題，建議送修。' },
+    busy:      { lv:'bad', name:'相機被其他 App 占用', verify:'camera',
       what:'鏡頭正被其他 App 或分頁使用，系統一次只讓一個 App 用相機。',
-      steps:['從螢幕底部往上滑停住，打開多工畫面','把視訊、通話、掃碼、相機類 App 往上滑完全關閉','關閉瀏覽器裡其他也在用鏡頭的分頁','回到這頁按「停止」再按「開始檢測」'] },
-    hardware:  { lv:'bad', name:'疑似鏡頭硬體故障',
-      what:'已經關掉占用相機的可能，但鏡頭超過 1 分鐘都打不開。這通常是硬體或系統層的問題。',
-      steps:['打開內建「相機」App 測試，切換前後鏡頭','完全關機 30 秒再開機','更新系統版本','如果內建相機 App 也黑畫面或打不開，建議送修檢查鏡頭模組'] },
-    black:     { lv:'bad', name:'畫面全黑',
+      steps:[
+        S('打開多工畫面', isIOS ? '從螢幕最底部往上滑，滑到一半停住，就會看到所有開著的 App。' : '點螢幕下方的「最近使用」按鈕（方塊或三條線圖示）。', null, { icon:'multitask' }),
+        S('關掉會用到相機的 App', '把視訊通話、LINE、相機、掃碼、會議類的 App 往上滑掉，完全關閉。'),
+        S('關掉其他瀏覽器分頁', '如果瀏覽器還開著其他也用鏡頭的網頁，把那些分頁關掉。'),
+      ],
+      next:['hardware'] },
+    hardware:  { lv:'bad', name:'疑似鏡頭硬體故障', verify:'camera',
+      what:'已經排除占用相機的可能，但鏡頭超過 1 分鐘都打不開。這通常是硬體或系統層的問題。',
+      steps:[
+        S('用內建相機 App 測試', '打開內建「相機」App，切換前後鏡頭。如果也打不開或黑畫面，就是硬體問題。', ['相機 App','切換前 / 後鏡頭']),
+        S('完全關機再開機', '關機後等 30 秒再開機，讓相機模組重新啟動。'),
+        S('更新系統', '把系統更新到最新版本。', isIOS ? ['設定','一般','軟體更新'] : ['設定','系統','軟體更新']),
+      ],
+      fail:'試過以上步驟還是不行，建議送修檢查鏡頭模組。' },
+    black:     { lv:'bad', name:'畫面全黑', verify:'camera',
       what:'鏡頭有在運作，但拍到的畫面幾乎全黑。',
-      steps:['檢查鏡頭是否被保護殼、貼紙、手指或隱私遮罩蓋住','換到光線充足的地方','切換前 / 後鏡頭比較看看','如果光線充足仍然全黑，可能是鏡頭硬體故障'] },
-    stuck:     { lv:'bad', name:'畫面完全靜止',
+      steps:[
+        S('檢查鏡頭有沒有被遮住', '看看保護殼、貼紙、手指或隱私遮罩有沒有蓋到鏡頭。拿開後看下面的亮度條會不會上升。', null, { live:'luma' }),
+        S('移到光線充足的地方', '開燈或靠近窗戶，亮度條應該要明顯上升。', null, { live:'luma' }),
+        S('切換前 / 後鏡頭', '用上方影片下面的選單切換鏡頭，比較兩個鏡頭的畫面。'),
+      ],
+      next:['hardware'], fail:'光線充足、沒有遮擋卻還是全黑，可能是鏡頭硬體故障。' },
+    stuck:     { lv:'bad', name:'畫面完全靜止', verify:'camera',
       what:'畫面一直在送出，但內容完全沒有變化，像是卡住的照片。可能是感光元件沒有回應。',
-      steps:['在鏡頭前揮手，確認畫面有沒有跟著動','按「停止」再按「開始檢測」','重新開機','反覆出現的話，用內建相機 App 測試是否也會卡住'] },
-    sleep:     { lv:'bad', name:'平板休眠或切換到其他 App',
+      steps:[
+        S('在鏡頭前揮手', '對著鏡頭揮揮手，看下面的變化條有沒有跳動。', null, { live:'move' }),
+        S('重新開啟鏡頭', '按下一步後，會自動關閉再重新開啟鏡頭。', null, { action:'restart' }),
+        S('重新開機', '如果還是卡住，關機 30 秒再開機。'),
+      ],
+      next:['hardware'] },
+    sleep:     { lv:'bad', name:'平板休眠或切換到其他 App', verify:'confirm',
       what:'頁面被切到背景或螢幕關閉，系統會強制關閉鏡頭。這是平板鏡頭中斷最常見的原因。',
-      steps: isIOS
-        ? ['設定 → 螢幕顯示與亮度 → 自動鎖定 → 改成「永不」','使用時讓這個畫面保持在最前面，不要切到其他 App','如果有開「引導使用模式」，確認時間限制沒有設定']
-        : ['設定 → 顯示 → 螢幕逾時 → 改成最長','使用時讓這個畫面保持在最前面','關閉「自適應電池」或把瀏覽器設成「不受限制」'] },
-    freeze:    { lv:'bad', name:'系統為了省電把頁面凍結',
+      steps: isIOS ? [
+        S('關閉自動鎖定', '讓螢幕不會自己關掉。', ['設定','螢幕顯示與亮度','自動鎖定','永不']),
+        S('保持畫面在最前面', '使用時不要切到其他 App，也不要按電源鍵關螢幕。'),
+        S('檢查引導使用模式', '如果有開「引導使用模式」，確認沒有設定時間限制。', ['設定','輔助使用','引導使用模式']),
+      ] : [
+        S('延長螢幕逾時', '讓螢幕不會自己關掉。', ['設定','顯示','螢幕逾時','最長']),
+        S('保持畫面在最前面', '使用時不要切到其他 App，也不要按電源鍵關螢幕。'),
+        S('取消瀏覽器的電池限制', '避免系統在背景限制瀏覽器。', ['設定','應用程式','Chrome','電池','不受限制']),
+      ],
+      next:['freeze'] },
+    freeze:    { lv:'bad', name:'系統為了省電把頁面凍結', verify:'confirm',
       what:'頁面停止運作好幾秒，代表系統暫停了這個頁面，鏡頭也跟著停。',
-      steps: isIOS
-        ? ['接上電源','設定 → 電池 → 關閉「低耗電模式」','關閉自動鎖定']
-        : ['接上電源','關閉「省電模式」','設定 → 應用程式 → 瀏覽器 → 電池 → 改成「不受限制」'] },
-    overlay:   { lv:'warn', name:'通知、控制中心或來電打斷',
+      steps: isIOS ? [
+        S('接上電源', '長時間使用時請接上充電器。'),
+        S('關閉低耗電模式', '低耗電模式會讓系統更積極地暫停網頁。', ['設定','電池','低耗電模式 關閉']),
+        S('關閉自動鎖定', '避免螢幕關閉。', ['設定','螢幕顯示與亮度','自動鎖定','永不']),
+      ] : [
+        S('接上電源', '長時間使用時請接上充電器。'),
+        S('關閉省電模式', '省電模式會讓系統更積極地暫停網頁。', ['設定','電池','省電模式 關閉']),
+        S('取消瀏覽器的電池限制', '', ['設定','應用程式','Chrome','電池','不受限制']),
+      ] },
+    overlay:   { lv:'warn', name:'通知、控制中心或來電打斷', verify:'confirm',
       what:'有東西蓋在畫面上（通知、控制中心、來電、分割畫面），系統暫停了鏡頭。',
-      steps:['開啟「勿擾模式」或「專注模式」','避免使用分割畫面、滑動切換或子母畫面','使用期間不要拉下控制中心或通知中心'] },
-    heat:      { lv:'bad', name:'過熱或效能不足',
+      steps:[
+        S('開啟勿擾模式', '避免通知和來電打斷。', isIOS ? ['控制中心','專注模式','勿擾模式'] : ['快速設定','勿擾模式']),
+        S('不要使用分割畫面', '讓這個頁面全螢幕顯示，不要和其他 App 並排或使用子母畫面。'),
+        S('使用時不要拉下選單', '避免拉下控制中心或通知中心。'),
+      ],
+      next:['sleep'] },
+    heat:      { lv:'bad', name:'過熱或效能不足', verify:'camera',
       what:'畫面更新速度明顯變慢或卡住，通常是平板過熱降速，或同時開太多 App。',
-      steps:['拿掉保護殼、遠離陽光或熱源','避免邊充電邊長時間使用','把背景其他 App 全部關閉','重新開機釋放記憶體'] },
-    lowfps:    { lv:'warn', name:'畫面變慢（過熱前兆）',
+      steps:[
+        S('讓平板降溫', '拿掉保護殼、遠離陽光或熱源，暫停充電幾分鐘。'),
+        S('關掉背景 App', isIOS ? '從螢幕底部往上滑停住，把其他 App 都滑掉。' : '打開最近使用畫面，點「全部關閉」。', null, { icon:'multitask' }),
+        S('重新開機', '如果還是很慢，重新開機釋放記憶體。'),
+      ] },
+    lowfps:    { lv:'warn', name:'畫面變慢（過熱前兆）', verify:'camera',
       what:'畫面更新速度掉到平常的一半以下，再繼續可能會卡住或中斷。',
-      steps:['摸摸看平板背面是否發燙','拿掉保護殼、暫停充電讓它降溫','關閉背景其他 App'] },
-    device:    { lv:'warn', name:'相機裝置變動',
+      steps:[
+        S('摸摸看平板背面', '如果明顯發燙，代表過熱正在降速。'),
+        S('讓平板降溫', '拿掉保護殼、暫停充電，放在通風的地方。'),
+        S('關掉背景 App', '把其他沒在用的 App 都關掉。', null, { icon:'multitask' }),
+      ],
+      next:['heat'] },
+    device:    { lv:'warn', name:'相機裝置變動', verify:'camera',
       what:'有外接鏡頭、擴充座或藍牙設備連接或斷開，鏡頭因此被重新分配。',
-      steps:['檢查外接設備的接頭是否鬆動','暫時拔掉擴充座或外接鏡頭測試','關閉不需要的藍牙設備'] },
-    constraint:{ lv:'warn', name:'鏡頭不支援指定的畫質',
+      steps:[
+        S('檢查外接設備', '確認外接鏡頭、擴充座的接頭有插好、沒有鬆動。'),
+        S('拔掉外接設備測試', '暫時拔掉擴充座或外接鏡頭，只用平板內建鏡頭測試。'),
+        S('關閉不需要的藍牙設備', '', isIOS ? ['設定','藍牙'] : ['設定','連線','藍牙']),
+      ] },
+    constraint:{ lv:'warn', name:'鏡頭不支援指定的畫質', verify:'camera',
       what:'鏡頭不支援預設的解析度，已自動改用鏡頭預設畫質。',
-      steps:['一般不需要處理','如果仍然開不了，試著切換前 / 後鏡頭'] },
-    system:    { lv:'bad', name:'系統主動關閉鏡頭（原因不明）',
+      steps:[ S('切換前 / 後鏡頭', '通常不需要處理。如果仍然開不了，試著切換鏡頭。') ] },
+    system:    { lv:'bad', name:'系統主動關閉鏡頭（原因不明）', verify:'camera',
       what:'鏡頭被系統關閉，但瀏覽器沒有看到任何前兆。',
-      steps:['更新系統和瀏覽器到最新版','重新開機','記下發生時間，觀察是否有固定規律（例如固定時間、充電時）'] },
+      steps:[
+        S('更新系統和瀏覽器', '', isIOS ? ['設定','一般','軟體更新'] : ['設定','系統','軟體更新']),
+        S('重新開機', '關機 30 秒再開機。'),
+        S('記下發生的時間', '觀察是否有固定規律，例如固定時間、充電時、使用多久之後。'),
+      ],
+      next:['busy','sleep','heat'] },
   };
+  const stepText = s => s.t + (s.path ? '：' + s.path.join(' → ') : '');
 
   // ===== 狀態 =====
   let stream = null, track = null, running = false, wakeLock = null;
@@ -276,19 +404,21 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   function setBadge(state, text){ $('badge').className = 'badge ' + state; $('badgeText').textContent = text; }
 
   // ===== 問題面板 =====
+  let currentProblem = null;
   function showProblem(key, conf, evidence){
     const c = CAUSES[key];
+    currentProblem = key; $('guideBtn').hidden = false;
     $('problem').className = 'problem ' + c.lv;
     $('pTitle').textContent = c.name;
     $('pConf').hidden = !conf; $('pConf').textContent = conf ? '判斷：' + conf : '';
     $('pWhat').textContent = c.what;
     $('pWhy').hidden = !evidence; $('pWhy').textContent = evidence ? '依據：' + evidence + '　（' + clock() + '）' : '';
     const ol = $('pSteps'); ol.innerHTML = '';
-    c.steps.forEach(s => { const li = document.createElement('li'); li.textContent = s; ol.append(li); });
+    c.steps.forEach(s => { const li = document.createElement('li'); li.textContent = stepText(s); ol.append(li); });
     ol.hidden = false; $('pStepsH').hidden = false;
   }
   function showOk(text, sub){
-    $('problem').className = 'problem ok';
+    $('problem').className = 'problem ok'; $('guideBtn').hidden = true;
     $('pTitle').textContent = text; $('pConf').hidden = true;
     $('pWhat').textContent = sub; $('pWhy').hidden = true; $('pSteps').hidden = true; $('pStepsH').hidden = true;
   }
@@ -359,6 +489,7 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
     NotReadableError:    ['busy',      '很可能',   '系統回報相機正在被使用或無法讀取'],
     AbortError:          ['busy',      '可能',     '開啟鏡頭被系統中止'],
     TypeError:           ['nosupport', '很可能',   '瀏覽器不接受相機請求'],
+    NotSupportedError:   ['nosupport', '很可能',   '瀏覽器不支援這個相機請求'],
   };
 
   async function start(){
@@ -382,8 +513,8 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
         const d = pendingDiag; pendingDiag = null;
         d.ev.push('重新開啟時：' + txt);
         record(key === 'system' ? d.key : key, conf, d.ev.join('；'));
-      } else if (!(key === 'busy' && recent('busy-logged', 20000).length)) {
-        record(key, conf, txt); if (key === 'busy') sig('busy-logged');
+      } else if (!recent('fail-' + key, 30000).length) {
+        record(key, conf, txt); sig('fail-' + key);
       }
 
       // 長時間開不了 → 升級為疑似硬體故障
@@ -456,6 +587,7 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
     prevPix = cur;
     $('mLuma').style.width = Math.min(100, luma / 2.55) + '%'; $('oLuma').textContent = Math.round(luma);
     $('mMove').style.width = Math.min(100, movePct * 5) + '%'; $('oMove').textContent = movePct.toFixed(1) + '%';
+    updateLive(luma, movePct);
 
     // 黑畫面
     if (luma < 8 && max < 40){ blackSecs++; } else {
@@ -620,6 +752,207 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   $('iUA').textContent = UA;
   $('iHw').textContent = `CPU ${navigator.hardwareConcurrency || '?'} 核` + (navigator.deviceMemory ? `，記憶體約 ${navigator.deviceMemory} GB` : '');
 
+  // ===== 引導解決 =====
+  const G = { key:null, i:0, mode:'step', timer:null };
+  const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+  const btn = (txt, cls, fn) => { const b = el('button', cls, txt); b.type = 'button'; b.onclick = fn; return b; };
+
+  const ICONS = {
+    multitask: `<svg viewBox="0 0 220 150" width="220" aria-hidden="true">
+      <rect x="40" y="8" width="140" height="134" rx="14" fill="none" stroke="currentColor" stroke-width="3"/>
+      <rect x="58" y="34" width="44" height="62" rx="6" fill="currentColor" opacity=".18"/>
+      <rect x="118" y="34" width="44" height="62" rx="6" fill="currentColor" opacity=".18"/>
+      <path d="M80 30 v-14 M74 22 l6-7 6 7" stroke="var(--bad)" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <rect x="92" y="128" width="36" height="4" rx="2" fill="currentColor"/>
+      <path d="M110 122 v-22 M103 108 l7-8 7 8" stroke="var(--accent)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    </svg>`,
+    aa: `<svg viewBox="0 0 300 60" width="300" aria-hidden="true">
+      <rect x="4" y="10" width="292" height="40" rx="12" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+      <circle cx="30" cy="30" r="17" fill="var(--accent)"/>
+      <text x="30" y="36" text-anchor="middle" font-size="17" font-weight="700" fill="#fff">aA</text>
+      <text x="60" y="36" font-size="15" fill="currentColor">hby0413.github.io</text>
+    </svg>`,
+    lock: `<svg viewBox="0 0 300 60" width="300" aria-hidden="true">
+      <rect x="4" y="10" width="292" height="40" rx="20" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+      <circle cx="30" cy="30" r="17" fill="var(--accent)"/>
+      <rect x="23" y="29" width="14" height="10" rx="2" fill="#fff"/><path d="M26 29 v-4 a4 4 0 0 1 8 0 v4" stroke="#fff" stroke-width="2.5" fill="none"/>
+      <text x="60" y="36" font-size="15" fill="currentColor">hby0413.github.io</text>
+    </svg>`,
+    menu: `<svg viewBox="0 0 300 70" width="300" aria-hidden="true">
+      <rect x="4" y="8" width="292" height="54" rx="10" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
+      <text x="20" y="41" font-size="15" fill="currentColor">鏡頭穩定度檢測</text>
+      <circle cx="268" cy="35" r="18" fill="var(--accent)"/>
+      <circle cx="259" cy="35" r="2.6" fill="#fff"/><circle cx="268" cy="35" r="2.6" fill="#fff"/><circle cx="277" cy="35" r="2.6" fill="#fff"/>
+    </svg>`,
+  };
+
+  function openGuide(key){
+    if (!key || !CAUSES[key]) return;
+    G.key = key; G.i = 0; G.mode = 'step';
+    $('guide').hidden = false; document.body.style.overflow = 'hidden';
+    log(`開始引導：${CAUSES[key].name}`);
+    renderGuide();
+  }
+  function closeGuide(){
+    clearInterval(G.timer); G.timer = null;
+    $('guide').hidden = true; document.body.style.overflow = '';
+  }
+
+  function renderGuide(){
+    const c = CAUSES[G.key];
+    $('gProb').textContent = '正在處理：' + c.name;
+    const prog = $('gProg'); prog.innerHTML = '';
+    const total = c.steps.length + 1;
+    for (let k = 0; k < total; k++){ const i = el('i'); if (k <= (G.mode === 'step' ? G.i : total - 1)) i.className = 'on'; prog.append(i); }
+    const body = $('gBody'), act = $('gActions'); body.innerHTML = ''; act.innerHTML = '';
+
+    if (G.mode === 'step'){
+      const s = c.steps[G.i];
+      body.append(el('div', 'g-num', `步驟 ${G.i + 1} / ${c.steps.length}`));
+      const h = el('div', 'g-title', s.t); h.id = 'gTitle'; body.append(h);
+      if (s.d) body.append(el('p', 'g-desc', s.d));
+      const ill = illustration(s);
+      if (ill){ ill.style.marginTop = '12px'; body.append(ill); }
+      if (G.i > 0) act.append(btn('上一步', 'grow', () => { G.i--; renderGuide(); }));
+      else act.append(btn('這不是我的問題', 'grow', () => { closeGuide(); }));
+      const last = G.i === c.steps.length - 1;
+      act.append(btn(last ? '做好了，幫我測試' : '做好了，下一步', 'primary', async () => {
+        if (s.action === 'restart'){ log('引導：重新開啟鏡頭'); if (running) await start(); else $('startBtn').click(); }
+        if (last) verifyGuide(); else { G.i++; renderGuide(); }
+      }));
+      if (s.live) ensureCamera();
+    }
+    act.querySelector('.primary')?.focus();
+  }
+
+  function illustration(s){
+    if (s.live){
+      const box = el('div', 'g-ill'); const w = el('div', 'g-live'); w.id = 'gLive'; w.dataset.kind = s.live;
+      const big = el('div', 'big', '–'); const bar = el('div', 'bar'); bar.append(el('i'));
+      const hint = el('div', 'hint', running ? '偵測中…' : '正在開啟鏡頭…');
+      w.append(el('div', 'g-num', s.live === 'luma' ? '畫面亮度' : '畫面變化'), big, bar, hint);
+      box.append(w); return box;
+    }
+    if (s.icon || s.path){
+      const box = el('div', 'g-ill');
+      if (s.icon){ const d = el('div'); d.innerHTML = ICONS[s.icon]; box.append(d); }
+      if (s.path){
+        const cr = el('div', 'crumbs');
+        s.path.forEach((p, k) => {
+          if (k) cr.append(el('em', '', '›'));
+          cr.append(el('span', k === s.path.length - 1 ? 'last' : '', p));
+        });
+        if (s.icon) cr.style.marginTop = '10px';
+        box.append(cr);
+      }
+      return box;
+    }
+    return null;
+  }
+
+  function ensureCamera(){ if (!running) $('startBtn').click(); }
+
+  function updateLive(luma, movePct){
+    const w = $('gLive'); if (!w || $('guide').hidden) return;
+    const kind = w.dataset.kind, bar = w.querySelector('.bar i'), big = w.querySelector('.big'), hint = w.querySelector('.hint');
+    if (kind === 'luma'){
+      big.textContent = Math.round(luma); bar.style.width = Math.min(100, luma / 2.55) + '%';
+      const good = luma >= 30;
+      hint.className = 'hint ' + (good ? 'good' : 'bad');
+      hint.textContent = good ? '亮度正常 ✓ 可以按下一步' : luma < 8 ? '幾乎全黑，請檢查鏡頭是否被遮住' : '偏暗，請移到亮一點的地方';
+    } else {
+      big.textContent = movePct.toFixed(1) + '%'; bar.style.width = Math.min(100, movePct * 5) + '%';
+      const good = movePct >= 3;
+      hint.className = 'hint ' + (good ? 'good' : 'bad');
+      hint.textContent = good ? '畫面有跟著動 ✓' : '對著鏡頭揮手看看';
+    }
+  }
+
+  function healthy(){
+    return running && track && track.readyState === 'live' && !track.muted && !frozen && !blackFlag && !stillFlag
+      && performance.now() - lastFrameAt < 2000;
+  }
+
+  async function verifyGuide(){
+    const c = CAUSES[G.key];
+    G.mode = 'verify';
+    const body = $('gBody'), act = $('gActions'); body.innerHTML = ''; act.innerHTML = '';
+    $('gProg').querySelectorAll('i').forEach(i => i.className = 'on');
+
+    if (c.verify === 'reopen'){
+      const r = el('div', 'g-result');
+      r.append(el('div', 'mark wait', '→'), el('div', 'g-title', '請在正確的瀏覽器重新打開'),
+        el('p', 'g-desc', '用 Safari 或 Chrome 打開下面這個網址，再按「開始檢測」。'));
+      const u = el('div', 'urlbox', location.origin + location.pathname); r.append(u); body.append(r);
+      act.append(btn('複製網址', '', async (e) => {
+        try { await navigator.clipboard.writeText(u.textContent); e.target.textContent = '已複製'; }
+        catch(_) { const rg = document.createRange(); rg.selectNodeContents(u); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(rg); e.target.textContent = '已選取，請按拷貝'; }
+      }), btn('完成', 'primary', closeGuide));
+      return;
+    }
+
+    if (c.verify === 'confirm'){
+      const r = el('div', 'g-result');
+      r.append(el('div', 'mark ok', '✓'), el('div', 'g-title', '設定完成'),
+        el('p', 'g-desc', '這類問題要放著觀察才知道有沒有改善。請繼續檢測、照平常方式使用，如果再發生，這裡會自動提醒你。'));
+      body.append(r);
+      log(`引導完成：${c.name}（已套用設定，持續觀察）`, 'ok');
+      act.append(btn('繼續檢測', 'primary', () => { ensureCamera(); closeGuide(); }));
+      return;
+    }
+
+    // camera：重新開鏡頭並觀察
+    const secs = G.key === 'stuck' ? 17 : 9;
+    const r = el('div', 'g-result');
+    const cd = el('p', 'g-desc', '');
+    r.append(el('div', 'spin'), el('div', 'g-title', '正在測試鏡頭…'), cd);
+    body.append(r);
+    if (G.key === 'stuck') r.append(el('p', 'g-desc', '測試時請在鏡頭前隨意揮手。'));
+    act.append(btn('取消', '', closeGuide));
+
+    if (!running) $('startBtn').click(); else await start();
+    let left = secs;
+    cd.textContent = `請稍候 ${left} 秒`;
+    clearInterval(G.timer);
+    G.timer = setInterval(() => {
+      left--; cd.textContent = `請稍候 ${left} 秒`;
+      if (left > 0) return;
+      clearInterval(G.timer); G.timer = null;
+      showResult(healthy());
+    }, 1000);
+  }
+
+  function showResult(ok){
+    const c = CAUSES[G.key];
+    G.mode = 'result';
+    const body = $('gBody'), act = $('gActions'); body.innerHTML = ''; act.innerHTML = '';
+    const r = el('div', 'g-result');
+    if (ok){
+      r.append(el('div', 'mark ok', '✓'), el('div', 'g-title', '問題已解決'),
+        el('p', 'g-desc', '鏡頭現在運作正常。檢測會繼續進行，如果再發生問題，會自動提醒你。'));
+      body.append(r);
+      log(`引導結果：${c.name} → 已解決`, 'ok');
+      recovered();
+      act.append(btn('完成', 'primary', closeGuide));
+    } else {
+      const nowKey = currentProblem && currentProblem !== G.key ? currentProblem : null;
+      r.append(el('div', 'mark bad', '!'), el('div', 'g-title', '還沒有解決'),
+        el('p', 'g-desc', c.fail || '鏡頭還是沒有正常運作。可以重做一次，或試試下面其他可能的原因。'));
+      if (nowKey) r.append(el('p', 'g-desc', `測試時偵測到另一個問題：「${CAUSES[nowKey].name}」。`));
+      body.append(r);
+      log(`引導結果：${c.name} → 未解決`, 'bad');
+      act.append(btn('重做一次', 'grow', () => { G.i = 0; G.mode = 'step'; renderGuide(); }));
+      const nexts = [...new Set([nowKey, ...(c.next || [])].filter(k => k && k !== G.key))];
+      nexts.slice(0, 2).forEach(k => act.append(btn('試試：' + CAUSES[k].name, '', () => openGuide(k))));
+      act.append(btn('複製報告給客服', 'primary', () => { $('copyBtn').click(); closeGuide(); }));
+    }
+  }
+
+  $('guideBtn').onclick = () => openGuide(currentProblem);
+  $('gClose').onclick = closeGuide;
+  $('guide').addEventListener('click', e => { if (e.target === $('guide')) closeGuide(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('guide').hidden) closeGuide(); });
+
   // ===== 按鈕 =====
   $('startBtn').onclick = async () => {
     running = true; testStart = Date.now(); drops = 0; longest = 0; lastTick = Date.now();
@@ -665,7 +998,10 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   };
 
   restore();
-  preflight();
+  preflight().then(() => {
+    const g = new URLSearchParams(location.search).get('guide');
+    if (g && CAUSES[g]) { showProblem(g, '', ''); openGuide(g); }
+  });
 })();
 </script>
 </body>
