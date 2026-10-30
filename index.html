@@ -174,7 +174,7 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
         <ol class="meet-steps">
           <li>按右邊的綠色按鈕，會打開 Google Meet。</li>
           <li>iPad 第一次使用會請您安裝「Google Meet」App，照畫面安裝後再按一次按鈕。</li>
-          <li>輸入您的名字，按「要求加入」，等客服讓您進來。</li>
+          <li>輸入您的名字，按「加入」就會直接進入，不用等待。</li>
         </ol>
         <p class="meet-note" id="meetNote"></p>
       </div>
@@ -1407,7 +1407,7 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   fetch('meet.json?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.json() : null).then(m => {
     if (!m || !/^https:\/\/meet\.google\.com\/[a-z-]+$/.test(m.url)) return;
     $('meetBtn').href = m.url;
-    $('meetNote').textContent = `本週視訊連結：${m.url.replace('https://','')}（${m.created} 更新）`;
+    $('meetNote').textContent = `視訊連結：${m.url.replace('https://','')}`;
     $('meetBox').hidden = false;
     $('meetBtn').addEventListener('click', () => log('開啟和客服視訊：' + m.url));
   }).catch(() => {});
