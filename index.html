@@ -127,6 +127,14 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
 @media (prefers-reduced-motion: reduce){.spin{animation-duration:3s}}
 @media (max-width:520px){.g-title{font-size:1.35rem}.g-desc{font-size:1.05rem}.g-actions button{flex:1 1 auto}}
 .urlbox{font-family:var(--mono);font-size:.9rem;background:var(--soft);padding:8px 10px;border-radius:8px;word-break:break-all}
+.meet-body{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}
+.meet-body > div{flex:1 1 320px;min-width:0}
+.meet-t{margin:0 0 6px;font-size:1rem}
+.meet-steps{margin:0;padding-left:1.3em;font-size:.92rem}
+.meet-steps li{margin:3px 0}
+.meet-note{margin:8px 0 0;font-size:.8rem;color:var(--muted)}
+.meet-btn{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;font-size:1.1rem;padding:14px 26px;border-radius:10px}
+.meet-btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .log{max-height:360px;overflow:auto;font-family:var(--mono);font-size:.8rem;border-top:1px solid var(--line)}
 .log div{padding:6px 2px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:auto 1fr;gap:10px}
 .log time{color:var(--muted)}
@@ -157,6 +165,22 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
       <div class="g-actions" id="gActions"></div>
     </div>
   </div>
+
+  <section class="panel meet" id="meetBox" hidden>
+    <div class="meet-body">
+      <div>
+        <h2>和客服視訊測試</h2>
+        <p class="meet-t">檢測完還是有問題？可以和客服視訊，讓客服直接看您的鏡頭畫面。</p>
+        <ol class="meet-steps">
+          <li>按右邊的綠色按鈕，會打開 Google Meet。</li>
+          <li>iPad 第一次使用會請您安裝「Google Meet」App，照畫面安裝後再按一次按鈕。</li>
+          <li>輸入您的名字，按「要求加入」，等客服讓您進來。</li>
+        </ol>
+        <p class="meet-note" id="meetNote"></p>
+      </div>
+      <a class="meet-btn" id="meetBtn" href="#" target="_blank" rel="noopener">開啟視訊</a>
+    </div>
+  </section>
 
   <section class="panel">
     <h2>環境檢查</h2>
@@ -1378,6 +1402,15 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
     }
     setTimeout(() => $('copyBtn').textContent = '複製報告', 1500);
   };
+
+  // ===== 和客服視訊：連結放在 meet.json，每週自動更新 =====
+  fetch('meet.json?t=' + Date.now(), { cache:'no-store' }).then(r => r.ok ? r.json() : null).then(m => {
+    if (!m || !/^https:\/\/meet\.google\.com\/[a-z-]+$/.test(m.url)) return;
+    $('meetBtn').href = m.url;
+    $('meetNote').textContent = `本週視訊連結：${m.url.replace('https://','')}（${m.created} 更新）`;
+    $('meetBox').hidden = false;
+    $('meetBtn').addEventListener('click', () => log('開啟和客服視訊：' + m.url));
+  }).catch(() => {});
 
   restore();
   // 上次檢測中，網頁沒有正常關閉就重新開始了 → 被系統關掉重開（多半是記憶體不足）
