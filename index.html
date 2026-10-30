@@ -196,6 +196,7 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
       <dt>螢幕常亮</dt><dd id="iWake">–</dd>
       <dt>電量</dt><dd id="iBatt">–</dd>
       <dt>效能</dt><dd id="iHw">–</dd>
+      <dt>瀏覽器</dt><dd id="iBrowser">–</dd>
       <dt>裝置</dt><dd id="iUA">–</dd>
     </dl>
   </section>
@@ -220,6 +221,32 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   const UA = navigator.userAgent;
   const isIOS = /iPad|iPhone|iPod/.test(UA) || (/Macintosh/.test(UA) && navigator.maxTouchPoints > 1);
 
+  // ===== 瀏覽器辨識（系統只支援 Chrome / Safari）=====
+  function detectBrowser(){
+    const u = UA, ver = re => ((u.match(re) || [])[1] || '').split('.').slice(0,2).join('.');
+    const inapp = [[/Line\//i,'LINE'],[/FBAN|FBAV|FB_IAB/,'Facebook'],[/Instagram/,'Instagram'],[/MicroMessenger/,'微信'],
+                   [/KAKAOTALK/i,'KakaoTalk'],[/Messenger/,'Messenger'],[/Threads/,'Threads']];
+    for (const [re, n] of inapp) if (re.test(u)) return { name: n + ' 內建瀏覽器', ok:false, inapp:true };
+    if (/; wv\)/.test(u)) return { name:'App 內建瀏覽器（WebView）', ok:false, inapp:true };
+    if (isIOS && !/Safari\//.test(u) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(u)) return { name:'App 內建瀏覽器', ok:false, inapp:true };
+    if (/EdgA?\/|EdgiOS\//.test(u)) return { name:'Microsoft Edge ' + ver(/Edg(?:A|iOS)?\/([\d.]+)/), ok:false };
+    if (/OPR\/|OPiOS\//.test(u))   return { name:'Opera ' + ver(/(?:OPR|OPiOS)\/([\d.]+)/), ok:false };
+    if (/SamsungBrowser\//.test(u)) return { name:'Samsung 網際網路 ' + ver(/SamsungBrowser\/([\d.]+)/), ok:false };
+    if (/Firefox\/|FxiOS\//.test(u)) return { name:'Firefox ' + ver(/(?:Firefox|FxiOS)\/([\d.]+)/), ok:false };
+    if (/YaBrowser|UCBrowser|MiuiBrowser|HuaweiBrowser|HeyTapBrowser|VivoBrowser|DuckDuckGo/.test(u))
+      return { name:'其他瀏覽器（' + (u.match(/(YaBrowser|UCBrowser|MiuiBrowser|HuaweiBrowser|HeyTapBrowser|VivoBrowser|DuckDuckGo)/)||[])[1] + '）', ok:false };
+    if (navigator.brave) return { name:'Brave', ok:false };
+    if (/CriOS\//.test(u)) return { name:'Chrome ' + ver(/CriOS\/([\d.]+)/) + '（iOS）', ok:true, chrome:true };
+    if (/Chrome\//.test(u)){
+      const brands = (navigator.userAgentData?.brands || []).map(b => b.brand);
+      if (brands.length && !brands.includes('Google Chrome')) return { name:'Chromium 類瀏覽器（' + (brands.find(b => !/Not|Chromium/.test(b)) || 'Chromium') + '）', ok:false };
+      return { name:'Chrome ' + ver(/Chrome\/([\d.]+)/), ok:true, chrome:true };
+    }
+    if (/Safari\//.test(u) && /Version\//.test(u)) return { name:'Safari ' + ver(/Version\/([\d.]+)/), ok:true, safari:true };
+    return { name:'無法辨識的瀏覽器', ok:false };
+  }
+  const BROWSER = detectBrowser();
+
   // ===== 問題定義：標題、說明、引導步驟 =====
   // 步驟格式：{ t:標題, d:說明, path:[設定路徑], live:'luma'|'move', icon }
   const S = (t, d, path, extra) => Object.assign({ t, d, path }, extra || {});
@@ -236,6 +263,17 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
         S('找到右上角的選單', '在畫面右上角或右下角，找「⋯」或分享圖示，點一下。', null, { icon:'menu' }),
         S('選擇用瀏覽器開啟', isIOS ? '選「用 Safari 開啟」或「以預設瀏覽器開啟」。' : '選「用 Chrome 開啟」或「以瀏覽器開啟」。', ['⋯', isIOS ? '用 Safari 開啟' : '用 Chrome 開啟']),
         S('在新開的瀏覽器重新檢測', '頁面打開後，按「開始檢測」並允許使用相機。'),
+      ] },
+    unsupported: { lv:'bad', name:'使用的瀏覽器不在支援範圍', verify:'reopen',
+      what:'系統只支援 Chrome 和 Safari。目前偵測到：' + BROWSER.name + '。其他瀏覽器可能無法正常使用鏡頭。',
+      steps: isIOS ? [
+        S('複製這個網址', '先把目前頁面的網址複製起來。', ['網址列','拷貝']),
+        S('打開 Safari', '回到主畫面，點藍色指南針圖示的「Safari」。', ['主畫面','Safari']),
+        S('貼上網址並開啟', '在 Safari 網址列貼上剛剛的網址，前往後按「開始檢測」。'),
+      ] : [
+        S('複製這個網址', '先把目前頁面的網址複製起來。', ['網址列','複製']),
+        S('打開 Chrome', '回到主畫面或應用程式列表，點「Chrome」。沒有的話到 Play 商店安裝。', ['主畫面','Chrome']),
+        S('貼上網址並開啟', '在 Chrome 網址列貼上剛剛的網址，前往後按「開始檢測」。'),
       ] },
     nosupport: { lv:'bad', name:'瀏覽器不支援相機', verify:'reopen',
       what:'這個瀏覽器或系統版本太舊，無法在網頁上使用相機。',
@@ -400,7 +438,10 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   }
   function log(msg, cls=''){ const t = clock(); logLines.push({t, m:msg, c:cls}); addRow(t, msg, cls); save(); }
   function sig(type, info=''){ signals.push({t:Date.now(), type, info}); if (signals.length > 300) signals.shift(); }
+  let lastDropAt = 0;
   function recent(type, ms){ const now = Date.now(); return signals.filter(s => s.type === type && now - s.t <= ms); }
+  // 判斷原因時只採用「上一次中斷之後」才出現的訊號，避免舊訊號被重複套用
+  function fresh(type, ms){ return recent(type, ms).filter(s => s.t > lastDropAt); }
   function setBadge(state, text){ $('badge').className = 'badge ' + state; $('badgeText').textContent = text; }
 
   // ===== 問題面板 =====
@@ -448,32 +489,40 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   function diagnose(kind){
     const W = 15000, ev = [];
     let key, conf = '可能';
-    const gaps = recent('gap', W), lowF = recent('lowfps', 60000);
-    if (recent('perm-off', W).length){ key='perm'; conf='高度確定'; ev.push('中斷前相機權限被變更'); }
+    const gaps = fresh('gap', W), lowF = fresh('lowfps', 60000);
+    if (fresh('perm-off', W).length){ key='perm'; conf='高度確定'; ev.push('中斷前相機權限被變更'); }
     else if (kind === 'black'){ key='black'; conf='高度確定'; ev.push('畫面平均亮度接近 0 超過 5 秒'); }
     else if (kind === 'stuck'){ key='stuck'; conf='很可能'; ev.push('畫面持續送出但內容 15 秒完全沒變'); }
-    else if (kind === 'resumeDead' || recent('hidden', W).length){ key='sleep'; conf='高度確定'; ev.push('中斷前頁面進入背景或螢幕關閉'); }
+    else if (kind === 'resumeDead' || fresh('hidden', W).length){ key='sleep'; conf='高度確定'; ev.push('中斷前頁面進入背景或螢幕關閉'); }
     else if (gaps.length){ key='freeze'; conf='很可能'; ev.push(`頁面曾停止運作 ${Math.round(gaps[gaps.length-1].info/1000)} 秒`); }
-    else if (recent('device', W).length){ key='device'; conf='很可能'; ev.push('中斷前相機裝置清單有變動'); }
+    else if (fresh('device', W).length){ key='device'; conf='很可能'; ev.push('中斷前相機裝置清單有變動'); }
     else if (kind === 'frozen' || lowF.length){
       key='heat'; conf = kind === 'frozen' && lowF.length ? '很可能' : '可能';
       if (lowF.length) ev.push(`中斷前 FPS 從約 ${baselineFps} 掉到 ${lowF[lowF.length-1].info}`);
       if (kind === 'frozen') ev.push('串流沒斷但畫面停止更新');
       if (isCharging) ev.push('當時正在充電');
     }
-    else if (recent('blur', W).length){ key='overlay'; conf='可能'; ev.push('中斷前頁面失去焦點但沒進背景'); }
+    else if (fresh('blur', W).length){ key='overlay'; conf='可能'; ev.push('中斷前頁面失去焦點但沒進背景'); }
     else { key = kind === 'mute' ? 'overlay' : 'system'; conf='無法確定';
       ev.push(kind === 'mute' ? '系統暫停了畫面，沒有其他前兆' : '鏡頭被系統結束，沒有其他前兆'); }
-    if (recent('unplug', W).length) ev.push('中斷前剛拔除電源');
+    if (fresh('unplug', W).length) ev.push('中斷前剛拔除電源');
     return { key, conf, ev };
   }
 
   function markDrop(kind, label){
+    if (lastDropAt && Date.now() - lastDropAt < 5000 && kind !== 'black' && kind !== 'stuck'){
+      if (segStart) { longest = Math.max(longest, Date.now()-segStart); segStart = 0; }
+      setBadge('bad', '中斷：' + label);
+      log('⚠ ' + label + '（與上一個問題同時發生，視為同一事件）', 'bad');
+      lastDropAt = Date.now();
+      return;
+    }
     if (segStart) { longest = Math.max(longest, Date.now()-segStart); segStart = 0; }
     drops++; $('sDrops').textContent = drops; $('sLong').textContent = fmtDur(longest);
     setBadge('bad', '中斷：' + label);
     log('⚠ 鏡頭中斷 — ' + label, 'bad');
     const d = diagnose(kind);
+    lastDropAt = Date.now();
     if ((d.key === 'system' || d.key === 'overlay') && kind === 'ended' && $('autoRe').checked){
       pendingDiag = d;   // 等重連結果，可區分「被占用」
       setTimeout(() => { if (pendingDiag === d){ pendingDiag = null; record(d.key, d.conf, d.ev.join('；')); } }, 6000);
@@ -497,6 +546,7 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
       record(window.isSecureContext ? 'nosupport' : 'insecure', '高度確定', '瀏覽器沒有提供相機功能');
       setBadge('bad','無法使用'); return;
     }
+    if (document.visibilityState === 'hidden'){ log('頁面在背景，等回到頁面再重新開啟鏡頭'); return; }
     stopStream(true);
     const constraints = useBasic ? { video:true, audio:false }
       : { video:{ facingMode:$('camSel').value, width:{ideal:1280}, height:{ideal:720} }, audio:false };
@@ -513,7 +563,8 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
         const d = pendingDiag; pendingDiag = null;
         d.ev.push('重新開啟時：' + txt);
         record(key === 'system' ? d.key : key, conf, d.ev.join('；'));
-      } else if (!recent('fail-' + key, 30000).length) {
+        sig('fail-' + key);
+      } else if (!recent('fail-' + key, 30000).length && !(hwFlagged && (key === 'busy' || key === 'system'))) {
         record(key, conf, txt); sig('fail-' + key);
       }
 
@@ -657,7 +708,10 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
     if (document.visibilityState === 'hidden') { sig('hidden'); log('頁面進入背景 / 螢幕關閉', 'warn'); }
     else {
       log('回到頁面', 'ok'); requestWake(); lastTick = Date.now();
-      if (!track || track.readyState === 'ended') { markDrop('resumeDead','回到頁面時鏡頭已被關閉'); if ($('autoRe').checked) start(); }
+      if (!track || track.readyState === 'ended') {
+        if (segStart) markDrop('resumeDead','回到頁面時鏡頭已被關閉');   // 尚未記錄過才記，避免同一次重複
+        if ($('autoRe').checked) start();
+      }
     }
   });
   window.addEventListener('blur', () => { if (running){ sig('blur'); log('頁面失去焦點（通知、控制中心、來電或多工）'); } });
@@ -692,9 +746,9 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
     setCheck('https', secure ? 'pass' : 'fail', '安全連線', secure ? 'https 正常' : '網址不是 https，無法用相機');
     if (!secure) preflightBlock = 'insecure';
 
-    const inapp = /Line\/|FBAN|FBAV|FB_IAB|Instagram|MicroMessenger|KAKAOTALK|; wv\)/i.test(UA);
-    setCheck('browser', inapp ? 'fail' : 'pass', '瀏覽器', inapp ? '在 App 內建瀏覽器中，請改用 Safari / Chrome' : (isIOS ? 'iPad / iPhone 瀏覽器' : '一般瀏覽器'));
-    if (inapp && !preflightBlock) preflightBlock = 'inapp';
+    setCheck('browser', BROWSER.ok ? 'pass' : 'fail', '瀏覽器',
+      BROWSER.name + (BROWSER.ok ? '（支援）' : BROWSER.inapp ? '，不支援，請改用 Safari / Chrome' : '，不支援，請改用 Chrome / Safari'));
+    if (!BROWSER.ok && !preflightBlock) preflightBlock = BROWSER.inapp ? 'inapp' : 'unsupported';
 
     const gum = !!navigator.mediaDevices?.getUserMedia;
     setCheck('gum', gum ? 'pass' : 'fail', '相機功能', gum ? '瀏覽器支援' : '瀏覽器不支援網頁相機');
@@ -750,6 +804,7 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   }
 
   $('iUA').textContent = UA;
+  $('iBrowser').textContent = BROWSER.name + (BROWSER.ok ? '（支援）' : '（不支援）');
   $('iHw').textContent = `CPU ${navigator.hardwareConcurrency || '?'} 核` + (navigator.deviceMemory ? `，記憶體約 ${navigator.deviceMemory} GB` : '');
 
   // ===== 引導解決 =====
@@ -980,7 +1035,7 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
       .map(k => `  ${CAUSES[k]?.name || k}：${causeCount[k]} 次`).join('\n') || '  （無）';
     const chk = Object.values(checks).map(c => `  ${c.state === 'pass' ? '✓' : c.state === 'fail' ? '✕' : '!'} ${c.title}：${c.note}`).join('\n');
     const text = [
-      '【鏡頭檢測報告】', `產生時間：${clock()}`, `裝置：${UA}`,
+      '【鏡頭檢測報告】', `產生時間：${clock()}`, `瀏覽器：${BROWSER.name}${BROWSER.ok ? '（支援）' : '（不支援）'}`, `裝置：${UA}`,
       `鏡頭：${$('iRes').textContent}　數量：${$('iCams').textContent}`,
       `效能：${$('iHw').textContent}　電量：${$('iBatt').textContent}`,
       `本次中斷：${drops} 次　最長連續：${$('sLong').textContent}　基準 FPS：${baselineFps || '–'}`,
