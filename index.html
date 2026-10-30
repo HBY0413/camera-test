@@ -139,6 +139,9 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
 .meet-note{margin:8px 0 0;font-size:.8rem;color:var(--muted)}
 .meet-btn{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;font-size:1.1rem;padding:14px 26px;border-radius:10px}
 .meet-btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.step{display:flex;align-items:center;gap:10px;margin:14px 0 -6px;font-size:1.15rem;font-weight:800;letter-spacing:0;color:var(--fg)}
+.step span{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:1rem;flex:none}
+.step-sub{margin:0;color:var(--muted);font-size:.92rem}
 .log{max-height:360px;overflow:auto;font-family:var(--mono);font-size:.8rem;border-top:1px solid var(--line)}
 .log div{padding:6px 2px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:auto 1fr;gap:10px}
 .log time{color:var(--muted)}
@@ -149,48 +152,11 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
 <div class="wrap">
   <header>
     <h1>鏡頭穩定度檢測</h1>
-    <p class="sub">按「開始檢測」並允許使用相機，照平常的方式放著用。出現問題時，下方會直接顯示原因和處理方法。</p>
+    <p class="sub">照下面的順序：先檢測，不行再和客服視訊，最後把紀錄傳給客服。</p>
   </header>
 
-  <section class="problem" id="problem" aria-live="polite">
-    <div class="head"><span class="title" id="pTitle">尚未開始檢測</span><span class="pill" id="pConf" hidden></span></div>
-    <p class="what" id="pWhat">先看下面的「環境檢查」，全部沒問題後按「開始檢測」。</p>
-    <div class="why" id="pWhy" hidden></div>
-    <p class="steps-h" id="pStepsH" hidden>可以試試的方法</p>
-    <ol id="pSteps" hidden></ol>
-    <div class="pactions"><button class="primary" id="guideBtn" hidden>一步一步帶我解決</button></div>
-  </section>
-
-  <div class="modal" id="guide" hidden role="dialog" aria-modal="true" aria-labelledby="gTitle">
-    <div class="sheet">
-      <div class="g-top"><span id="gProb"></span><button id="gClose" aria-label="關閉引導">✕ 關閉</button></div>
-      <div class="g-prog" id="gProg"></div>
-      <div id="gBody"></div>
-      <div class="g-actions" id="gActions"></div>
-    </div>
-  </div>
-
-  <section class="panel meet" id="meetBox" hidden>
-    <div class="meet-body">
-      <div>
-        <h2>和客服視訊測試</h2>
-        <p class="meet-t">檢測完還是有問題？可以和客服視訊，讓客服直接看您的鏡頭畫面。</p>
-        <ol class="meet-steps">
-          <li>按右邊的綠色按鈕，會打開 Google Meet。</li>
-          <li>iPad 第一次使用會請您安裝「Google Meet」App，照畫面安裝後再按一次按鈕。</li>
-          <li>輸入您的名字，按「加入」就會直接進入，不用等待。</li>
-        </ol>
-        <p class="meet-note" id="meetNote"></p>
-      </div>
-      <a class="meet-btn" id="meetBtn" href="#" target="_blank" rel="noopener">開啟視訊</a>
-    </div>
-  </section>
-
-  <section class="panel">
-    <h2>環境檢查</h2>
-    <div class="checks" id="checks"></div>
-  </section>
-
+  <h2 class="step"><span>1</span>開始檢測</h2>
+  <p class="step-sub">按「開始檢測」並允許使用相機，然後照平常的方式放著用。有問題時，下面會直接告訴您發生什麼事、可以怎麼處理。</p>
   <div class="grid">
     <section class="panel">
       <div class="video-box">
@@ -223,6 +189,58 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
     </section>
   </div>
 
+  <section class="problem" id="problem" aria-live="polite">
+    <div class="head"><span class="title" id="pTitle">尚未開始檢測</span><span class="pill" id="pConf" hidden></span></div>
+    <p class="what" id="pWhat">按上面的「開始檢測」開始。</p>
+    <div class="why" id="pWhy" hidden></div>
+    <p class="steps-h" id="pStepsH" hidden>可以試試的方法</p>
+    <ol id="pSteps" hidden></ol>
+    <div class="pactions"><button class="primary" id="guideBtn" hidden>一步一步帶我解決</button></div>
+  </section>
+
+  <div class="modal" id="guide" hidden role="dialog" aria-modal="true" aria-labelledby="gTitle">
+    <div class="sheet">
+      <div class="g-top"><span id="gProb"></span><button id="gClose" aria-label="關閉引導">✕ 關閉</button></div>
+      <div class="g-prog" id="gProg"></div>
+      <div id="gBody"></div>
+      <div class="g-actions" id="gActions"></div>
+    </div>
+  </div>
+
+  <h2 class="step"><span>2</span>還是不行？和客服視訊</h2>
+  <section class="panel meet" id="meetBox">
+    <div class="meet-body">
+      <div>
+        <p class="meet-t">照著上面的方法試過還是不行，可以和客服視訊，讓客服直接看您的鏡頭畫面。</p>
+        <ol class="meet-steps">
+          <li>按綠色的「開啟視訊」按鈕，會打開 Google Meet。</li>
+          <li>iPad 第一次使用會請您安裝「Google Meet」App，照畫面安裝後再按一次按鈕。</li>
+          <li>輸入您的名字，按「加入」就會直接進入，不用等待。</li>
+        </ol>
+        <p class="meet-note" id="meetNote"></p>
+      </div>
+      <a class="meet-btn" id="meetBtn" href="#" target="_blank" rel="noopener">開啟視訊</a>
+    </div>
+  </section>
+
+  <h2 class="step"><span>3</span>給客服看的紀錄</h2>
+  <p class="step-sub">按「複製報告給客服」，再貼到和客服的對話裡。下面是給客服看的詳細資料，一般不用看。</p>
+  <section class="panel">
+    <div class="controls" style="margin:0 0 10px;justify-content:space-between">
+      <h2 style="margin:0">事件紀錄</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="copyBtn" class="primary">複製報告給客服</button>
+        <button id="clearBtn">清除</button>
+      </div>
+    </div>
+    <div class="log" id="log"></div>
+  </section>
+
+  <section class="panel">
+    <h2>環境檢查</h2>
+    <div class="checks" id="checks"></div>
+  </section>
+
   <section class="panel">
     <h2>裝置資訊</h2>
     <dl>
@@ -236,17 +254,6 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
       <dt>瀏覽器</dt><dd id="iBrowser">–</dd>
       <dt>裝置</dt><dd id="iUA">–</dd>
     </dl>
-  </section>
-
-  <section class="panel">
-    <div class="controls" style="margin:0 0 10px;justify-content:space-between">
-      <h2 style="margin:0">事件紀錄</h2>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button id="copyBtn">複製報告</button>
-        <button id="clearBtn">清除</button>
-      </div>
-    </div>
-    <div class="log" id="log"></div>
   </section>
 </div>
 
@@ -1189,7 +1196,7 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
                    nosupport:'瀏覽器沒有提供相機功能', missing:'系統的鏡頭清單是 0 個', perm:'相機權限狀態：已拒絕' }[preflightBlock];
       showProblem(preflightBlock, ['開始前的環境檢查：' + pe]);
     }
-    else showOk('環境檢查通過', '按「開始檢測」並允許使用相機。');
+    else showOk('環境檢查通過', '按上面的「開始檢測」，並允許使用相機。');
   }
 
   $('iUA').textContent = UA;
