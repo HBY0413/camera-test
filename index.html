@@ -8,17 +8,19 @@
 :root{
   --bg:#f3f5f4; --panel:#ffffff; --fg:#1b2420; --muted:#5f6d66; --line:#d9e0dc; --soft:#eef3f0;
   --accent:#1f7a5c; --ok:#1f7a5c; --warn:#b7791f; --bad:#c0392b;
+  --ok-bg:#e6f4ee; --warn-bg:#fbf1df; --bad-bg:#fbe7e4;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark){
   :root{ --bg:#111614; --panel:#1a211e; --fg:#e6ece9; --muted:#93a29a; --line:#2c3632; --soft:#222b27;
-    --accent:#4fbf95; --ok:#4fbf95; --warn:#e0a84a; --bad:#ef6b5c; color-scheme:dark; }
+    --accent:#4fbf95; --ok:#4fbf95; --warn:#e0a84a; --bad:#ef6b5c;
+    --ok-bg:#16302a; --warn-bg:#352a17; --bad-bg:#3a1d1a; color-scheme:dark; }
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--fg);
   font:15px/1.5 -apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}
-.wrap{max-width:960px;margin:0 auto;padding-block:16px 40px;
+.wrap{max-width:980px;margin:0 auto;padding-block:16px 40px;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   display:grid;gap:16px}
 h1{font-size:1.3rem;margin:0}
@@ -26,6 +28,31 @@ h1{font-size:1.3rem;margin:0}
 .grid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px}
 @media (max-width:720px){.grid{grid-template-columns:1fr}}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}
+h2{font-size:.8rem;letter-spacing:.06em;color:var(--muted);margin:0 0 10px;font-weight:600}
+
+/* 問題診斷 */
+.problem{border-radius:10px;padding:16px;border:1px solid var(--line);background:var(--panel)}
+.problem.ok{background:var(--ok-bg);border-color:transparent}
+.problem.warn{background:var(--warn-bg);border-color:transparent}
+.problem.bad{background:var(--bad-bg);border-color:transparent}
+.problem .head{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}
+.problem .title{font-size:1.15rem;font-weight:700}
+.problem.ok .title{color:var(--ok)} .problem.warn .title{color:var(--warn)} .problem.bad .title{color:var(--bad)}
+.pill{font-size:.75rem;padding:2px 8px;border-radius:999px;background:var(--panel);color:var(--muted);border:1px solid var(--line)}
+.problem .what{margin:6px 0 0;font-size:.92rem}
+.problem .why{margin:4px 0 0;font-size:.82rem;color:var(--muted)}
+.problem ol{margin:10px 0 0;padding-left:1.4em;font-size:.92rem}
+.problem ol li{margin:4px 0}
+.problem .steps-h{margin:12px 0 0;font-weight:600;font-size:.88rem}
+
+/* 環境檢查 */
+.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+.chk-item{display:grid;grid-template-columns:auto 1fr;gap:8px;padding:8px 10px;border-radius:8px;background:var(--soft);font-size:.86rem;min-width:0}
+.chk-item .ic{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:.75rem;font-weight:700;color:#fff;background:var(--muted)}
+.chk-item.pass .ic{background:var(--ok)} .chk-item.warn .ic{background:var(--warn)} .chk-item.fail .ic{background:var(--bad)}
+.chk-item b{display:block;font-weight:600}
+.chk-item span{color:var(--muted);font-size:.8rem}
+
 .video-box{position:relative;background:#000;border-radius:8px;overflow:hidden;aspect-ratio:4/3;max-width:100%}
 video{width:100%;height:100%;object-fit:contain;display:block}
 .badge{position:absolute;left:10px;top:10px;padding:4px 10px;border-radius:999px;font-weight:600;font-size:.85rem;
@@ -40,18 +67,16 @@ button.primary{background:var(--accent);border-color:var(--accent);color:#fff;fo
 button:disabled{opacity:.5;cursor:default}
 button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 label.chk{display:flex;gap:6px;align-items:center;font-size:.9rem;color:var(--muted)}
-dl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0;font-size:.9rem}
+dl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0;font-size:.88rem}
 dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:tabular-nums;word-break:break-all}
-h2{font-size:.8rem;letter-spacing:.06em;color:var(--muted);margin:0 0 10px;font-weight:600}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
 .stat{border:1px solid var(--line);border-radius:8px;padding:8px;text-align:center}
 .stat b{display:block;font-size:1.4rem;font-variant-numeric:tabular-nums}
 .stat span{font-size:.75rem;color:var(--muted)}
-.diag{border-left:4px solid var(--line);background:var(--soft);border-radius:6px;padding:10px 12px;margin-bottom:12px}
-.diag.bad{border-left-color:var(--bad)} .diag.ok{border-left-color:var(--ok)}
-.diag .t{font-weight:700} .diag .c{font-size:.8rem;color:var(--muted);margin-left:6px;font-weight:400}
-.diag p{margin:4px 0 0;font-size:.88rem}
-.diag .ev{font-size:.8rem;color:var(--muted)}
+.meter{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;font-size:.8rem;color:var(--muted);margin-bottom:6px}
+.bar{height:6px;border-radius:3px;background:var(--soft);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0}
+.meter output{font-family:var(--mono);font-variant-numeric:tabular-nums;min-width:3ch;text-align:right}
 .causes{display:grid;gap:6px;font-size:.88rem}
 .causes .row{display:grid;grid-template-columns:1fr auto;gap:10px;padding:6px 8px;border-radius:6px;background:var(--soft)}
 .causes .row b{font-variant-numeric:tabular-nums}
@@ -60,16 +85,27 @@ h2{font-size:.8rem;letter-spacing:.06em;color:var(--muted);margin:0 0 10px;font-
 .log div{padding:6px 2px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:auto 1fr;gap:10px}
 .log time{color:var(--muted)}
 .log .bad{color:var(--bad)} .log .warn{color:var(--warn)} .log .ok{color:var(--ok)} .log .diagline{color:var(--accent);font-weight:600}
-.tips{font-size:.85rem;color:var(--muted);margin:0;padding-left:1.2em}
-.tips li{margin:4px 0}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <h1>鏡頭穩定度檢測</h1>
-    <p class="sub">按「開始檢測」並允許使用相機，照平常的方式放著用。鏡頭一中斷，系統會根據前後發生的事推測原因。</p>
+    <p class="sub">按「開始檢測」並允許使用相機，照平常的方式放著用。出現問題時，下方會直接顯示原因和處理方法。</p>
   </header>
+
+  <section class="problem" id="problem" aria-live="polite">
+    <div class="head"><span class="title" id="pTitle">尚未開始檢測</span><span class="pill" id="pConf" hidden></span></div>
+    <p class="what" id="pWhat">先看下面的「環境檢查」，全部沒問題後按「開始檢測」。</p>
+    <p class="why" id="pWhy" hidden></p>
+    <p class="steps-h" id="pStepsH" hidden>可以嘗試的辦法</p>
+    <ol id="pSteps" hidden></ol>
+  </section>
+
+  <section class="panel">
+    <h2>環境檢查</h2>
+    <div class="checks" id="checks"></div>
+  </section>
 
   <div class="grid">
     <section class="panel">
@@ -90,14 +126,15 @@ h2{font-size:.8rem;letter-spacing:.06em;color:var(--muted);margin:0 0 10px;font-
     </section>
 
     <section class="panel">
-      <h2>最近一次中斷</h2>
-      <div class="diag" id="diag"><div class="t">尚無中斷</div><p class="ev">開始檢測後，若鏡頭中斷，這裡會顯示推測原因與處理建議。</p></div>
+      <h2>即時數據</h2>
       <div class="stats">
         <div class="stat"><b id="sDrops">0</b><span>中斷次數</span></div>
         <div class="stat"><b id="sFps">–</b><span>實際 FPS</span></div>
         <div class="stat"><b id="sLong">–</b><span>最長連續</span></div>
       </div>
-      <h2>原因統計</h2>
+      <div class="meter"><span>畫面亮度</span><div class="bar"><i id="mLuma"></i></div><output id="oLuma">–</output></div>
+      <div class="meter"><span>畫面變化</span><div class="bar"><i id="mMove"></i></div><output id="oMove">–</output></div>
+      <h2 style="margin-top:14px">原因統計</h2>
       <div class="causes" id="causes"><div class="empty">尚無資料</div></div>
     </section>
   </div>
@@ -107,6 +144,7 @@ h2{font-size:.8rem;letter-spacing:.06em;color:var(--muted);margin:0 0 10px;font-
     <dl>
       <dt>鏡頭</dt><dd id="iLabel">–</dd>
       <dt>解析度</dt><dd id="iRes">–</dd>
+      <dt>相機數量</dt><dd id="iCams">–</dd>
       <dt>相機權限</dt><dd id="iPerm">–</dd>
       <dt>螢幕常亮</dt><dd id="iWake">–</dd>
       <dt>電量</dt><dd id="iBatt">–</dd>
@@ -125,138 +163,145 @@ h2{font-size:.8rem;letter-spacing:.06em;color:var(--muted);margin:0 0 10px;font-
     </div>
     <div class="log" id="log"></div>
   </section>
-
-  <section class="panel">
-    <h2>判斷方式說明</h2>
-    <ul class="tips">
-      <li><b>休眠或切換 App</b>：中斷前頁面被切到背景，或計時器停了好幾秒（代表系統把頁面凍結）。</li>
-      <li><b>通知、控制中心或來電</b>：頁面沒進背景，但中斷前剛失去焦點。</li>
-      <li><b>被其他 App 占用</b>：中斷後重新開鏡頭時，系統回報相機正在被使用。</li>
-      <li><b>過熱或效能不足</b>：中斷前 FPS 明顯下降，或畫面凍結但串流沒斷。</li>
-      <li><b>權限被關閉</b>：中斷前相機權限從「允許」變成其他狀態。</li>
-      <li><b>裝置變動</b>：中斷前有外接或藍牙設備連接/斷開。</li>
-      <li>推測依據的是瀏覽器看得到的訊號，標示「可能」的項目建議再觀察幾次確認。</li>
-    </ul>
-  </section>
 </div>
 
 <script>
 (() => {
   const $ = id => document.getElementById(id);
   const v = $('v');
-  const STORE = 'camtest-v2';
+  const STORE = 'camtest-v3';
+  const UA = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(UA) || (/Macintosh/.test(UA) && navigator.maxTouchPoints > 1);
 
-  // ---------- 狀態 ----------
+  // ===== 問題定義：標題、說明、處理步驟 =====
+  const CAUSES = {
+    insecure:  { lv:'bad', name:'網址不安全，無法使用相機',
+      what:'瀏覽器只允許 https:// 開頭的網址使用相機。',
+      steps:['確認網址是 https://hby0413.github.io/camera-test/','不要用「下載後開啟檔案」的方式打開'] },
+    inapp:     { lv:'bad', name:'在 App 內建瀏覽器開啟',
+      what:'LINE、Facebook、Instagram 等 App 內建的瀏覽器常常不能用相機，或很容易被中斷。',
+      steps:['點右上角「⋯」或分享按鈕','選「用 Safari 開啟」或「用 Chrome 開啟」','在 Safari / Chrome 裡重新檢測'] },
+    nosupport: { lv:'bad', name:'瀏覽器不支援相機',
+      what:'這個瀏覽器或系統版本太舊，無法在網頁上使用相機。',
+      steps:['改用 Safari（iPad）或 Chrome（Android）','到「設定 → 一般 → 軟體更新」更新系統'] },
+    perm:      { lv:'bad', name:'相機權限被拒絕或關閉',
+      what:'瀏覽器或系統不允許這個網頁使用相機。',
+      steps: isIOS
+        ? ['點網址列左邊的「大小」圖示 →「網站設定」→ 相機 → 允許','或到 設定 → Safari → 相機 → 改成「允許」或「詢問」','到 設定 → 螢幕使用時間 → 內容與隱私權限制，確認相機沒有被關閉','重新整理頁面後再按「開始檢測」']
+        : ['點網址列左邊的鎖頭圖示 → 權限 → 相機 → 允許','到 設定 → 應用程式 → Chrome → 權限 → 相機 → 允許','重新整理頁面後再按「開始檢測」'] },
+    missing:   { lv:'bad', name:'找不到相機',
+      what:'系統回報沒有可用的鏡頭。可能是鏡頭硬體故障、排線鬆脫，或系統沒有偵測到。',
+      steps:['打開內建「相機」App，確認前後鏡頭都能正常顯示','完全關機再開機（不是只鎖螢幕）','更新系統版本','如果內建相機 App 也打不開，就是硬體問題，需要送修'] },
+    busy:      { lv:'bad', name:'相機被其他 App 占用',
+      what:'鏡頭正被其他 App 或分頁使用，系統一次只讓一個 App 用相機。',
+      steps:['從螢幕底部往上滑停住，打開多工畫面','把視訊、通話、掃碼、相機類 App 往上滑完全關閉','關閉瀏覽器裡其他也在用鏡頭的分頁','回到這頁按「停止」再按「開始檢測」'] },
+    hardware:  { lv:'bad', name:'疑似鏡頭硬體故障',
+      what:'已經關掉占用相機的可能，但鏡頭超過 1 分鐘都打不開。這通常是硬體或系統層的問題。',
+      steps:['打開內建「相機」App 測試，切換前後鏡頭','完全關機 30 秒再開機','更新系統版本','如果內建相機 App 也黑畫面或打不開，建議送修檢查鏡頭模組'] },
+    black:     { lv:'bad', name:'畫面全黑',
+      what:'鏡頭有在運作，但拍到的畫面幾乎全黑。',
+      steps:['檢查鏡頭是否被保護殼、貼紙、手指或隱私遮罩蓋住','換到光線充足的地方','切換前 / 後鏡頭比較看看','如果光線充足仍然全黑，可能是鏡頭硬體故障'] },
+    stuck:     { lv:'bad', name:'畫面完全靜止',
+      what:'畫面一直在送出，但內容完全沒有變化，像是卡住的照片。可能是感光元件沒有回應。',
+      steps:['在鏡頭前揮手，確認畫面有沒有跟著動','按「停止」再按「開始檢測」','重新開機','反覆出現的話，用內建相機 App 測試是否也會卡住'] },
+    sleep:     { lv:'bad', name:'平板休眠或切換到其他 App',
+      what:'頁面被切到背景或螢幕關閉，系統會強制關閉鏡頭。這是平板鏡頭中斷最常見的原因。',
+      steps: isIOS
+        ? ['設定 → 螢幕顯示與亮度 → 自動鎖定 → 改成「永不」','使用時讓這個畫面保持在最前面，不要切到其他 App','如果有開「引導使用模式」，確認時間限制沒有設定']
+        : ['設定 → 顯示 → 螢幕逾時 → 改成最長','使用時讓這個畫面保持在最前面','關閉「自適應電池」或把瀏覽器設成「不受限制」'] },
+    freeze:    { lv:'bad', name:'系統為了省電把頁面凍結',
+      what:'頁面停止運作好幾秒，代表系統暫停了這個頁面，鏡頭也跟著停。',
+      steps: isIOS
+        ? ['接上電源','設定 → 電池 → 關閉「低耗電模式」','關閉自動鎖定']
+        : ['接上電源','關閉「省電模式」','設定 → 應用程式 → 瀏覽器 → 電池 → 改成「不受限制」'] },
+    overlay:   { lv:'warn', name:'通知、控制中心或來電打斷',
+      what:'有東西蓋在畫面上（通知、控制中心、來電、分割畫面），系統暫停了鏡頭。',
+      steps:['開啟「勿擾模式」或「專注模式」','避免使用分割畫面、滑動切換或子母畫面','使用期間不要拉下控制中心或通知中心'] },
+    heat:      { lv:'bad', name:'過熱或效能不足',
+      what:'畫面更新速度明顯變慢或卡住，通常是平板過熱降速，或同時開太多 App。',
+      steps:['拿掉保護殼、遠離陽光或熱源','避免邊充電邊長時間使用','把背景其他 App 全部關閉','重新開機釋放記憶體'] },
+    lowfps:    { lv:'warn', name:'畫面變慢（過熱前兆）',
+      what:'畫面更新速度掉到平常的一半以下，再繼續可能會卡住或中斷。',
+      steps:['摸摸看平板背面是否發燙','拿掉保護殼、暫停充電讓它降溫','關閉背景其他 App'] },
+    device:    { lv:'warn', name:'相機裝置變動',
+      what:'有外接鏡頭、擴充座或藍牙設備連接或斷開，鏡頭因此被重新分配。',
+      steps:['檢查外接設備的接頭是否鬆動','暫時拔掉擴充座或外接鏡頭測試','關閉不需要的藍牙設備'] },
+    constraint:{ lv:'warn', name:'鏡頭不支援指定的畫質',
+      what:'鏡頭不支援預設的解析度，已自動改用鏡頭預設畫質。',
+      steps:['一般不需要處理','如果仍然開不了，試著切換前 / 後鏡頭'] },
+    system:    { lv:'bad', name:'系統主動關閉鏡頭（原因不明）',
+      what:'鏡頭被系統關閉，但瀏覽器沒有看到任何前兆。',
+      steps:['更新系統和瀏覽器到最新版','重新開機','記下發生時間，觀察是否有固定規律（例如固定時間、充電時）'] },
+  };
+
+  // ===== 狀態 =====
   let stream = null, track = null, running = false, wakeLock = null;
   let segStart = 0, longest = 0, drops = 0, testStart = 0;
   let frames = 0, lastFrameAt = 0, frozen = false, lastMediaTime = -1;
   let fpsHist = [], baselineFps = 0, lowFpsSecs = 0, lowFpsFlag = false;
-  let lastTick = Date.now();
-  let isCharging = null;
-  let pendingDiag = null;          // 等重連結果再定案的診斷
+  let lastTick = Date.now(), isCharging = null;
+  let pendingDiag = null, failSince = 0, hwFlagged = false, useBasic = false;
+  let blackSecs = 0, blackFlag = false, stillSecs = 0, stillFlag = false, prevPix = null;
   let logLines = [], causeCount = {};
-  const signals = [];              // {t, type, info}
+  const signals = [];
+  const cv = document.createElement('canvas'); cv.width = 80; cv.height = 60;
+  const cx = cv.getContext('2d', { willReadFrequently: true });
 
   const pad = n => String(n).padStart(2,'0');
   const fmtDur = ms => { const s=Math.max(0,Math.floor(ms/1000)); return `${pad(Math.floor(s/3600))}:${pad(Math.floor(s/60)%60)}:${pad(s%60)}`; };
   const clock = (d=new Date()) => `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 
-  // ---------- 儲存 ----------
-  function save(){
-    try { localStorage.setItem(STORE, JSON.stringify({ logLines: logLines.slice(-500), causeCount })); } catch(_){}
-  }
+  // ===== 儲存 =====
+  function save(){ try { localStorage.setItem(STORE, JSON.stringify({ logLines: logLines.slice(-600), causeCount })); } catch(_){} }
   function restore(){
     try {
-      const d = JSON.parse(localStorage.getItem(STORE) || 'null');
-      if (!d) return;
+      const d = JSON.parse(localStorage.getItem(STORE) || 'null'); if (!d) return;
       causeCount = d.causeCount || {};
       (d.logLines || []).forEach(l => { logLines.push(l); addRow(l.t, l.m, l.c); });
-      if (logLines.length) log('— 以上為之前的紀錄（重新整理後保留）—');
+      if (logLines.length) log('— 以上為之前的紀錄 —');
       renderCauses();
     } catch(_){}
   }
 
-  // ---------- 紀錄 ----------
+  // ===== 紀錄 =====
   function addRow(t, msg, cls){
     const row = document.createElement('div');
     const tm = document.createElement('time'); tm.textContent = t;
     const sp = document.createElement('span'); sp.textContent = msg; if (cls) sp.className = cls;
     row.append(tm, sp); $('log').prepend(row);
   }
-  function log(msg, cls=''){
-    const t = clock();
-    logLines.push({t, m:msg, c:cls}); addRow(t, msg, cls); save();
-  }
-  function sig(type, info=''){ signals.push({t:Date.now(), type, info}); if (signals.length > 200) signals.shift(); }
+  function log(msg, cls=''){ const t = clock(); logLines.push({t, m:msg, c:cls}); addRow(t, msg, cls); save(); }
+  function sig(type, info=''){ signals.push({t:Date.now(), type, info}); if (signals.length > 300) signals.shift(); }
   function recent(type, ms){ const now = Date.now(); return signals.filter(s => s.type === type && now - s.t <= ms); }
-
   function setBadge(state, text){ $('badge').className = 'badge ' + state; $('badgeText').textContent = text; }
 
-  // ---------- 原因推測 ----------
-  const CAUSES = {
-    perm:    { name:'相機權限被關閉', fix:'到 設定 → Safari（或瀏覽器）→ 相機，改成「允許」。' },
-    sleep:   { name:'平板休眠或切換到其他 App', fix:'關閉自動鎖定（設定 → 螢幕顯示與亮度 → 自動鎖定 → 永不），並讓畫面保持在前景。' },
-    freeze:  { name:'系統把頁面凍結（省電）', fix:'接上電源、關閉低耗電模式，並關閉自動鎖定。' },
-    overlay: { name:'通知、控制中心、來電或多工畫面打斷', fix:'開啟「勿擾模式」，避免使用分割畫面或子母畫面。' },
-    busy:    { name:'相機被其他 App 占用', fix:'從多工畫面把其他會用到相機的 App（視訊、掃碼、相機）完全關掉。' },
-    device:  { name:'相機裝置變動', fix:'檢查外接鏡頭、擴充座或藍牙設備是否鬆脫或自動連線。' },
-    heat:    { name:'過熱或效能不足', fix:'移開熱源與保護殼、避免邊充電邊長時間使用，並關掉背景 App。' },
-    system:  { name:'系統主動關閉鏡頭（原因未明）', fix:'更新系統與瀏覽器版本；若頻繁發生，記下時間點觀察是否有規律。' },
-  };
-
-  function diagnose(kind){
-    // kind: ended | mute | frozen | resumeDead
-    const W = 15000;
-    const ev = [];
-    let cause = null, conf = '可能';
-
-    const permOff = recent('perm-off', W);
-    const hidden = recent('hidden', W);
-    const gaps = recent('gap', W);
-    const blurs = recent('blur', W);
-    const devs = recent('device', W);
-    const lowFps = recent('lowfps', 60000);
-    const unplug = recent('unplug', W);
-
-    if (permOff.length){ cause='perm'; conf='高度確定'; ev.push('中斷前相機權限被變更'); }
-    else if (kind === 'resumeDead' || hidden.length){
-      cause='sleep'; conf = 'resumeDead' === kind || hidden.length ? '高度確定' : '可能';
-      ev.push('中斷前頁面進入背景 / 螢幕關閉');
-    }
-    else if (gaps.length){
-      cause='freeze'; conf='很可能';
-      ev.push(`頁面曾停止運作 ${Math.round(gaps[gaps.length-1].info/1000)} 秒`);
-    }
-    else if (devs.length){ cause='device'; conf='很可能'; ev.push('中斷前相機裝置清單有變動'); }
-    else if (kind === 'frozen' || lowFps.length){
-      cause='heat'; conf = kind === 'frozen' && lowFps.length ? '很可能' : '可能';
-      if (lowFps.length) ev.push(`中斷前 FPS 從約 ${baselineFps} 掉到 ${lowFps[lowFps.length-1].info}`);
-      if (kind === 'frozen') ev.push('串流沒斷但畫面停止更新');
-      if (isCharging) ev.push('當時正在充電（充電會增加發熱）');
-    }
-    else if (blurs.length){ cause='overlay'; conf='可能'; ev.push('中斷前頁面失去焦點，但沒有進入背景'); }
-    else { cause = kind === 'mute' ? 'overlay' : 'system'; conf='無法確定';
-      ev.push(kind === 'mute' ? '系統暫停了畫面，沒有其他訊號' : '鏡頭被系統結束，沒有其他訊號'); }
-
-    if (unplug.length) ev.push('中斷前剛拔除電源');
-    return { cause, conf, ev, kind };
+  // ===== 問題面板 =====
+  function showProblem(key, conf, evidence){
+    const c = CAUSES[key];
+    $('problem').className = 'problem ' + c.lv;
+    $('pTitle').textContent = c.name;
+    $('pConf').hidden = !conf; $('pConf').textContent = conf ? '判斷：' + conf : '';
+    $('pWhat').textContent = c.what;
+    $('pWhy').hidden = !evidence; $('pWhy').textContent = evidence ? '依據：' + evidence + '　（' + clock() + '）' : '';
+    const ol = $('pSteps'); ol.innerHTML = '';
+    c.steps.forEach(s => { const li = document.createElement('li'); li.textContent = s; ol.append(li); });
+    ol.hidden = false; $('pStepsH').hidden = false;
+  }
+  function showOk(text, sub){
+    $('problem').className = 'problem ok';
+    $('pTitle').textContent = text; $('pConf').hidden = true;
+    $('pWhat').textContent = sub; $('pWhy').hidden = true; $('pSteps').hidden = true; $('pStepsH').hidden = true;
+  }
+  function recovered(){
+    const last = logLines.slice().reverse().find(l => l.c === 'diagline');
+    showOk('鏡頭運作正常', drops ? `本次已中斷 ${drops} 次。` + (last ? '上一次：' + last.m.replace('➜ ','') : '') : '持續監測中，有問題會在這裡顯示。');
   }
 
-  function commitDiag(d){
-    const c = CAUSES[d.cause];
-    causeCount[d.cause] = (causeCount[d.cause] || 0) + 1;
-    const box = $('diag'); box.className = 'diag bad';
-    box.innerHTML = '';
-    const t = document.createElement('div'); t.className = 't'; t.textContent = c.name;
-    const cf = document.createElement('span'); cf.className = 'c'; cf.textContent = '（' + d.conf + '）'; t.append(cf);
-    const e = document.createElement('p'); e.className = 'ev'; e.textContent = '依據：' + d.ev.join('；');
-    const f = document.createElement('p'); f.textContent = '建議：' + c.fix;
-    const tm = document.createElement('p'); tm.className = 'ev'; tm.textContent = '時間：' + clock();
-    box.append(t, e, f, tm);
-    log(`➜ 推測原因：${c.name}（${d.conf}）｜依據：${d.ev.join('；')}`, 'diagline');
-    renderCauses(); save();
+  function record(key, conf, evidence){
+    causeCount[key] = (causeCount[key] || 0) + 1;
+    log(`➜ ${CAUSES[key].name}（${conf}）｜${evidence}`, 'diagline');
+    showProblem(key, conf, evidence); renderCauses(); save();
   }
-
   function renderCauses(){
     const el = $('causes'); el.innerHTML = '';
     const ks = Object.keys(causeCount).sort((a,b) => causeCount[b]-causeCount[a]);
@@ -269,56 +314,107 @@ h2{font-size:.8rem;letter-spacing:.06em;color:var(--muted);margin:0 0 10px;font-
     });
   }
 
+  // ===== 中斷原因推測 =====
+  function diagnose(kind){
+    const W = 15000, ev = [];
+    let key, conf = '可能';
+    const gaps = recent('gap', W), lowF = recent('lowfps', 60000);
+    if (recent('perm-off', W).length){ key='perm'; conf='高度確定'; ev.push('中斷前相機權限被變更'); }
+    else if (kind === 'black'){ key='black'; conf='高度確定'; ev.push('畫面平均亮度接近 0 超過 5 秒'); }
+    else if (kind === 'stuck'){ key='stuck'; conf='很可能'; ev.push('畫面持續送出但內容 15 秒完全沒變'); }
+    else if (kind === 'resumeDead' || recent('hidden', W).length){ key='sleep'; conf='高度確定'; ev.push('中斷前頁面進入背景或螢幕關閉'); }
+    else if (gaps.length){ key='freeze'; conf='很可能'; ev.push(`頁面曾停止運作 ${Math.round(gaps[gaps.length-1].info/1000)} 秒`); }
+    else if (recent('device', W).length){ key='device'; conf='很可能'; ev.push('中斷前相機裝置清單有變動'); }
+    else if (kind === 'frozen' || lowF.length){
+      key='heat'; conf = kind === 'frozen' && lowF.length ? '很可能' : '可能';
+      if (lowF.length) ev.push(`中斷前 FPS 從約 ${baselineFps} 掉到 ${lowF[lowF.length-1].info}`);
+      if (kind === 'frozen') ev.push('串流沒斷但畫面停止更新');
+      if (isCharging) ev.push('當時正在充電');
+    }
+    else if (recent('blur', W).length){ key='overlay'; conf='可能'; ev.push('中斷前頁面失去焦點但沒進背景'); }
+    else { key = kind === 'mute' ? 'overlay' : 'system'; conf='無法確定';
+      ev.push(kind === 'mute' ? '系統暫停了畫面，沒有其他前兆' : '鏡頭被系統結束，沒有其他前兆'); }
+    if (recent('unplug', W).length) ev.push('中斷前剛拔除電源');
+    return { key, conf, ev };
+  }
+
   function markDrop(kind, label){
     if (segStart) { longest = Math.max(longest, Date.now()-segStart); segStart = 0; }
     drops++; $('sDrops').textContent = drops; $('sLong').textContent = fmtDur(longest);
     setBadge('bad', '中斷：' + label);
     log('⚠ 鏡頭中斷 — ' + label, 'bad');
     const d = diagnose(kind);
-    // 原因不明的 ended 先等重連結果（可判斷是否被其他 App 占用）
-    if ((d.cause === 'system' || d.cause === 'overlay') && $('autoRe').checked && kind !== 'mute') {
-      pendingDiag = d;
-      setTimeout(() => { if (pendingDiag === d){ pendingDiag = null; commitDiag(d); } }, 6000);
-    } else commitDiag(d);
+    if ((d.key === 'system' || d.key === 'overlay') && kind === 'ended' && $('autoRe').checked){
+      pendingDiag = d;   // 等重連結果，可區分「被占用」
+      setTimeout(() => { if (pendingDiag === d){ pendingDiag = null; record(d.key, d.conf, d.ev.join('；')); } }, 6000);
+    } else record(d.key, d.conf, d.ev.join('；'));
   }
 
-  // ---------- 鏡頭 ----------
+  // ===== 開鏡頭與錯誤對應 =====
+  const ERR = {
+    NotAllowedError:     ['perm',      '高度確定', '系統拒絕相機權限'],
+    SecurityError:       ['insecure',  '高度確定', '安全性限制，無法使用相機'],
+    NotFoundError:       ['missing',   '高度確定', '系統回報沒有可用的鏡頭'],
+    OverconstrainedError:['constraint','高度確定', '鏡頭不支援指定的畫質'],
+    NotReadableError:    ['busy',      '很可能',   '系統回報相機正在被使用或無法讀取'],
+    AbortError:          ['busy',      '可能',     '開啟鏡頭被系統中止'],
+    TypeError:           ['nosupport', '很可能',   '瀏覽器不接受相機請求'],
+  };
+
   async function start(){
     if (!navigator.mediaDevices?.getUserMedia){
-      log('此瀏覽器不支援相機，或網址不是 https://', 'bad'); setBadge('bad','不支援'); return;
+      record(window.isSecureContext ? 'nosupport' : 'insecure', '高度確定', '瀏覽器沒有提供相機功能');
+      setBadge('bad','無法使用'); return;
     }
     stopStream(true);
+    const constraints = useBasic ? { video:true, audio:false }
+      : { video:{ facingMode:$('camSel').value, width:{ideal:1280}, height:{ideal:720} }, audio:false };
     try{
-      stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:$('camSel').value, width:{ideal:1280}, height:{ideal:720} }, audio:false });
+      stream = await navigator.mediaDevices.getUserMedia(constraints);
     }catch(e){
-      const map = { NotAllowedError:'相機權限被拒絕', NotReadableError:'相機正被其他 App 使用或硬體錯誤', NotFoundError:'找不到相機', OverconstrainedError:'鏡頭不支援指定設定', AbortError:'開啟被系統中止' };
-      log('開啟失敗：' + (map[e.name] || e.name + ' ' + e.message), 'bad'); setBadge('bad','開啟失敗');
+      const [key, conf, txt] = ERR[e.name] || ['system', '無法確定', e.name + ' ' + e.message];
+      log(`開啟失敗：${txt}（${e.name}）`, 'bad'); setBadge('bad','開啟失敗');
+      if (!failSince) failSince = Date.now();
+
+      if (key === 'constraint' && !useBasic){ useBasic = true; record('constraint', conf, txt); return start(); }
+
       if (pendingDiag){
         const d = pendingDiag; pendingDiag = null;
-        if (e.name === 'NotReadableError' || e.name === 'AbortError'){ d.cause='busy'; d.conf='很可能'; d.ev.push('重新開啟時系統回報相機正在被使用'); }
-        else if (e.name === 'NotAllowedError'){ d.cause='perm'; d.conf='高度確定'; d.ev.push('重新開啟時權限被拒'); }
-        commitDiag(d);
+        d.ev.push('重新開啟時：' + txt);
+        record(key === 'system' ? d.key : key, conf, d.ev.join('；'));
+      } else if (!(key === 'busy' && recent('busy-logged', 20000).length)) {
+        record(key, conf, txt); if (key === 'busy') sig('busy-logged');
       }
-      if (running && $('autoRe').checked) setTimeout(start, 3000);
+
+      // 長時間開不了 → 升級為疑似硬體故障
+      if ((key === 'busy' || key === 'system') && !hwFlagged && Date.now() - failSince > 60000){
+        hwFlagged = true;
+        record('hardware', '可能', `已連續 ${Math.round((Date.now()-failSince)/1000)} 秒無法開啟鏡頭`);
+      }
+      const retryable = ['busy','system','missing'].includes(key);
+      if (running && $('autoRe').checked && retryable) setTimeout(() => running && start(), 4000);
+      else if (running){ setBadge('bad','無法開啟'); }
       return;
     }
-    if (pendingDiag){
-      // 立刻就重連成功：不是被占用，維持原推測
-      const d = pendingDiag; pendingDiag = null; d.ev.push('重新開啟正常'); commitDiag(d);
-    }
+
+    if (pendingDiag){ const d = pendingDiag; pendingDiag = null; d.ev.push('重新開啟正常'); record(d.key, d.conf, d.ev.join('；')); }
+    if (failSince){ log(`鏡頭恢復（失敗持續 ${Math.round((Date.now()-failSince)/1000)} 秒）`, 'ok'); }
+    failSince = 0; hwFlagged = false;
+
     track = stream.getVideoTracks()[0];
     v.srcObject = stream;
     try { await v.play(); } catch(_) {}
     const s = track.getSettings();
     $('iLabel').textContent = track.label || '(未提供名稱)';
     $('iRes').textContent = `${s.width||'?'}×${s.height||'?'} @ ${s.frameRate ? Math.round(s.frameRate) : '?'}fps`;
-    track.onended = () => { if (running) { markDrop('ended','系統結束了鏡頭'); if ($('autoRe').checked) setTimeout(start, 1500); } };
-    track.onmute = () => { if (running) markDrop('mute','畫面被暫停'); };
-    track.onunmute = () => { if (running){ segStart = Date.now(); setBadge('ok','運作中'); log('畫面恢復','ok'); } };
+    track.onended = () => { if (running) { markDrop('ended','系統結束了鏡頭'); if ($('autoRe').checked) setTimeout(() => running && start(), 1500); } };
+    track.onmute  = () => { if (running) markDrop('mute','畫面被暫停'); };
+    track.onunmute= () => { if (running){ segStart = Date.now(); setBadge('ok','運作中'); log('畫面恢復','ok'); recovered(); } };
     segStart = Date.now(); frozen = false; lastFrameAt = performance.now();
     fpsHist = []; baselineFps = 0; lowFpsSecs = 0; lowFpsFlag = false;
+    blackSecs = 0; blackFlag = false; stillSecs = 0; stillFlag = false; prevPix = null;
     setBadge('ok','運作中'); log('鏡頭啟動：' + (track.label||'') + ' ' + $('iRes').textContent, 'ok');
-    requestWake();
+    recovered(); requestWake(); countCams();
   }
 
   function stopStream(silent){
@@ -334,10 +430,52 @@ h2{font-size:.8rem;letter-spacing:.06em;color:var(--muted);margin:0 0 10px;font-
     } catch(e){ $('iWake').textContent = '無法開啟：' + e.name; }
   }
 
-  // ---------- 幀監測 ----------
+  async function countCams(){
+    try {
+      const list = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
+      $('iCams').textContent = list.length + ' 個' + (list.some(d=>d.label) ? '：' + list.map(d=>d.label||'未命名').join('、') : '');
+      return list.length;
+    } catch(_) { $('iCams').textContent = '無法讀取'; return -1; }
+  }
+
+  // ===== 畫面內容分析：黑畫面、靜止畫面 =====
+  function analyzeFrame(){
+    if (!track || v.readyState < 2 || !v.videoWidth) return;
+    try { cx.drawImage(v, 0, 0, cv.width, cv.height); } catch(_) { return; }
+    const d = cx.getImageData(0, 0, cv.width, cv.height).data;
+    let sum = 0, max = 0, changed = 0;
+    const cur = new Uint8Array(cv.width * cv.height);
+    for (let i = 0, p = 0; i < d.length; i += 4, p++){
+      const y = (d[i]*299 + d[i+1]*587 + d[i+2]*114) / 1000 | 0;
+      cur[p] = y; sum += y; if (y > max) max = y;
+      if (prevPix && Math.abs(prevPix[p] - y) > 2) changed++;
+    }
+    const luma = sum / cur.length;
+    const hadPrev = !!prevPix;
+    const movePct = hadPrev ? changed / cur.length * 100 : 0;
+    prevPix = cur;
+    $('mLuma').style.width = Math.min(100, luma / 2.55) + '%'; $('oLuma').textContent = Math.round(luma);
+    $('mMove').style.width = Math.min(100, movePct * 5) + '%'; $('oMove').textContent = movePct.toFixed(1) + '%';
+
+    // 黑畫面
+    if (luma < 8 && max < 40){ blackSecs++; } else {
+      if (blackFlag){ blackFlag = false; segStart = Date.now(); log('畫面亮度恢復', 'ok'); setBadge('ok','運作中'); recovered(); }
+      blackSecs = 0;
+    }
+    if (blackSecs >= 5 && !blackFlag){ blackFlag = true; markDrop('black','畫面全黑'); }
+
+    // 完全靜止（每個像素都一模一樣 → 感光元件沒回應）
+    if (hadPrev && changed === 0 && luma >= 8){ stillSecs++; } else {
+      if (stillFlag){ stillFlag = false; segStart = Date.now(); log('畫面恢復變化', 'ok'); setBadge('ok','運作中'); recovered(); }
+      stillSecs = 0;
+    }
+    if (stillSecs >= 15 && !stillFlag){ stillFlag = true; markDrop('stuck','畫面完全靜止'); }
+  }
+
+  // ===== 幀監測 =====
   function onFrame(){
     frames++; lastFrameAt = performance.now();
-    if (frozen && running){ frozen = false; segStart = Date.now(); setBadge('ok','運作中'); log('畫面恢復更新','ok'); }
+    if (frozen && running){ frozen = false; segStart = Date.now(); setBadge('ok','運作中'); log('畫面恢復更新','ok'); recovered(); }
     if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(onFrame);
   }
   if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(onFrame);
@@ -346,114 +484,175 @@ h2{font-size:.8rem;letter-spacing:.06em;color:var(--muted);margin:0 0 10px;font-
   setInterval(() => {
     const now = Date.now();
     const gap = now - lastTick; lastTick = now;
-    if (running && gap > 5000){
-      sig('gap', gap);
-      log(`頁面停止運作了 ${Math.round(gap/1000)} 秒（裝置休眠或系統凍結頁面）`, 'warn');
-    }
+    if (running && gap > 5000){ sig('gap', gap); log(`頁面停止運作了 ${Math.round(gap/1000)} 秒（裝置休眠或系統凍結頁面）`, 'warn'); }
 
     const fps = frames; frames = 0;
     const live = running && track && track.readyState === 'live' && !track.muted && document.visibilityState === 'visible';
     $('sFps').textContent = live ? fps : '–';
 
+    // 有些瀏覽器不會觸發 ended，主動檢查
+    if (running && track && track.readyState === 'ended' && segStart){
+      track.onended && track.onended();
+    }
+
     if (live && !frozen){
+      analyzeFrame();
       fpsHist.push(fps);
-      if (fpsHist.length === 10){
-        const sorted = [...fpsHist].sort((a,b)=>a-b); baselineFps = sorted[5];
-        log(`基準 FPS：${baselineFps}`);
-      }
+      if (fpsHist.length === 10){ const s = [...fpsHist].sort((a,b)=>a-b); baselineFps = s[5]; log(`基準 FPS：${baselineFps}`); }
       if (fpsHist.length > 600) fpsHist.shift();
       if (baselineFps >= 10){
         const low = fps < Math.max(5, baselineFps * 0.5);
         lowFpsSecs = low ? lowFpsSecs + 1 : 0;
         if (lowFpsSecs >= 10 && !lowFpsFlag){
           lowFpsFlag = true; sig('lowfps', fps);
-          log(`⚠ FPS 持續下降：目前 ${fps}，原本約 ${baselineFps}（可能過熱降頻或效能不足）`, 'warn');
-          setBadge('warn','FPS 偏低');
+          record('lowfps', '很可能', `FPS 從約 ${baselineFps} 掉到 ${fps}，持續 10 秒` + (isCharging ? '；正在充電' : ''));
+          setBadge('warn','畫面變慢');
         }
-        if (!low && lowFpsFlag && fps >= baselineFps * 0.8){
-          lowFpsFlag = false; log(`FPS 回復至 ${fps}`, 'ok'); setBadge('ok','運作中');
-        }
+        if (!low && lowFpsFlag && fps >= baselineFps * 0.8){ lowFpsFlag = false; log(`FPS 回復至 ${fps}`, 'ok'); setBadge('ok','運作中'); recovered(); }
       }
     }
+    if (live && !frozen && performance.now() - lastFrameAt > 3000){ frozen = true; markDrop('frozen','畫面凍結超過 3 秒'); }
 
-    if (live && !frozen && performance.now() - lastFrameAt > 3000){
-      frozen = true; markDrop('frozen','畫面凍結超過 3 秒');
-    }
     if (running) $('timer').textContent = fmtDur(now - testStart);
     if (running && segStart) $('sLong').textContent = fmtDur(Math.max(longest, now-segStart));
-    if (running && (now - testStart) % 600000 < 1000 && now - testStart > 1000)
+    if (running && now - testStart > 1000 && (now - testStart) % 600000 < 1000)
       log(`定時回報：已運作 ${fmtDur(now - testStart)}，中斷 ${drops} 次`);
   }, 1000);
 
-  // ---------- 環境訊號 ----------
+  // ===== 環境訊號 =====
   document.addEventListener('visibilitychange', () => {
     if (!running) return;
     if (document.visibilityState === 'hidden') { sig('hidden'); log('頁面進入背景 / 螢幕關閉', 'warn'); }
     else {
       log('回到頁面', 'ok'); requestWake(); lastTick = Date.now();
-      if (!track || track.readyState === 'ended') {
-        markDrop('resumeDead','回到頁面時鏡頭已被關閉');
-        if ($('autoRe').checked) start();
-      }
+      if (!track || track.readyState === 'ended') { markDrop('resumeDead','回到頁面時鏡頭已被關閉'); if ($('autoRe').checked) start(); }
     }
   });
   window.addEventListener('blur', () => { if (running){ sig('blur'); log('頁面失去焦點（通知、控制中心、來電或多工）'); } });
   window.addEventListener('focus', () => { if (running) log('頁面取回焦點'); });
   window.addEventListener('pagehide', () => { if (running) log('頁面被關閉或重新整理','warn'); });
   window.addEventListener('orientationchange', () => { if (running) log('螢幕方向改變'); });
-  navigator.mediaDevices?.addEventListener?.('devicechange', () => { if (running){ sig('device'); log('相機裝置清單變更（外接或藍牙設備）','warn'); } });
+  window.addEventListener('offline', () => { if (running) log('網路中斷（不影響鏡頭，但可能影響使用中的服務）','warn'); });
+  window.addEventListener('online', () => { if (running) log('網路恢復'); });
+  navigator.mediaDevices?.addEventListener?.('devicechange', async () => {
+    if (!running) return;
+    sig('device'); const n = await countCams();
+    log(`相機裝置清單變更，目前 ${n} 個鏡頭`, 'warn');
+    if (n === 0) record('missing', '高度確定', '鏡頭從系統裝置清單中消失');
+  });
 
-  if (navigator.permissions?.query){
-    navigator.permissions.query({name:'camera'}).then(p => {
-      const t = { granted:'已允許', denied:'已拒絕', prompt:'尚未詢問' };
-      const upd = () => { $('iPerm').textContent = t[p.state] || p.state; };
-      upd(); p.onchange = () => { upd(); if (running){ if (p.state !== 'granted') sig('perm-off'); log('相機權限變更：' + (t[p.state]||p.state), 'warn'); } };
-    }).catch(() => { $('iPerm').textContent = '無法查詢'; });
-  } else $('iPerm').textContent = '無法查詢';
+  // ===== 環境檢查 =====
+  const checks = {};
+  function setCheck(id, state, title, note){
+    checks[id] = { state, title, note };
+    const el = $('checks'); el.innerHTML = '';
+    Object.values(checks).forEach(c => {
+      const d = document.createElement('div'); d.className = 'chk-item ' + c.state;
+      const ic = document.createElement('div'); ic.className = 'ic'; ic.textContent = c.state === 'pass' ? '✓' : c.state === 'warn' ? '!' : c.state === 'fail' ? '✕' : '…';
+      const t = document.createElement('div'); const b = document.createElement('b'); b.textContent = c.title;
+      const s = document.createElement('span'); s.textContent = c.note; t.append(b, s);
+      d.append(ic, t); el.append(d);
+    });
+  }
+  let preflightBlock = null;
+  async function preflight(){
+    const secure = window.isSecureContext;
+    setCheck('https', secure ? 'pass' : 'fail', '安全連線', secure ? 'https 正常' : '網址不是 https，無法用相機');
+    if (!secure) preflightBlock = 'insecure';
 
-  if (navigator.getBattery){
-    navigator.getBattery().then(b => {
-      isCharging = b.charging;
-      const upd = () => { $('iBatt').textContent = Math.round(b.level*100) + '%' + (b.charging ? '（充電中）' : ''); };
-      upd(); b.onlevelchange = () => { upd(); if (running && b.level <= 0.2 && !b.charging) log(`電量偏低：${Math.round(b.level*100)}%`, 'warn'); };
-      b.onchargingchange = () => { isCharging = b.charging; upd(); if (running){ if (!b.charging) sig('unplug'); log(b.charging ? '接上電源' : '拔除電源', 'warn'); } };
-    }).catch(()=>{ $('iBatt').textContent = '無法讀取'; });
-  } else $('iBatt').textContent = '無法讀取（iPad 不提供）';
+    const inapp = /Line\/|FBAN|FBAV|FB_IAB|Instagram|MicroMessenger|KAKAOTALK|; wv\)/i.test(UA);
+    setCheck('browser', inapp ? 'fail' : 'pass', '瀏覽器', inapp ? '在 App 內建瀏覽器中，請改用 Safari / Chrome' : (isIOS ? 'iPad / iPhone 瀏覽器' : '一般瀏覽器'));
+    if (inapp && !preflightBlock) preflightBlock = 'inapp';
 
-  $('iUA').textContent = navigator.userAgent;
+    const gum = !!navigator.mediaDevices?.getUserMedia;
+    setCheck('gum', gum ? 'pass' : 'fail', '相機功能', gum ? '瀏覽器支援' : '瀏覽器不支援網頁相機');
+    if (!gum && !preflightBlock) preflightBlock = secure ? 'nosupport' : 'insecure';
+
+    const iosVer = (UA.match(/OS (\d+)_(\d+)/) || []).slice(1).map(Number);
+    if (isIOS && iosVer.length){
+      const old = iosVer[0] < 15;
+      setCheck('os', old ? 'warn' : 'pass', '系統版本', `iOS / iPadOS ${iosVer.join('.')}` + (old ? '，版本偏舊，建議更新' : ''));
+    }
+
+    if (gum){
+      const n = await countCams();
+      setCheck('cams', n === 0 ? 'fail' : n > 0 ? 'pass' : 'warn', '偵測到的鏡頭', n === 0 ? '系統找不到任何鏡頭' : n > 0 ? `${n} 個` : '開始檢測後才能確認');
+      if (n === 0 && !preflightBlock) preflightBlock = 'missing';
+    }
+
+    if (navigator.permissions?.query){
+      try {
+        const p = await navigator.permissions.query({name:'camera'});
+        const t = { granted:'已允許', denied:'已拒絕', prompt:'按開始時會詢問' };
+        const upd = () => {
+          $('iPerm').textContent = t[p.state] || p.state;
+          setCheck('perm', p.state === 'granted' ? 'pass' : p.state === 'denied' ? 'fail' : 'warn', '相機權限', t[p.state] || p.state);
+        };
+        upd();
+        if (p.state === 'denied' && !preflightBlock) preflightBlock = 'perm';
+        p.onchange = () => { upd(); if (running){ if (p.state !== 'granted') sig('perm-off'); log('相機權限變更：' + (t[p.state]||p.state), 'warn'); } };
+      } catch(_) { $('iPerm').textContent = '無法查詢'; setCheck('perm', 'warn', '相機權限', '開始檢測後才能確認'); }
+    } else { $('iPerm').textContent = '無法查詢'; setCheck('perm', 'warn', '相機權限', '開始檢測後才能確認'); }
+
+    const wake = 'wakeLock' in navigator;
+    setCheck('wake', wake ? 'pass' : 'warn', '螢幕常亮', wake ? '支援，檢測時自動開啟' : '不支援，請手動關閉自動鎖定');
+
+    if (navigator.getBattery){
+      try {
+        const b = await navigator.getBattery(); isCharging = b.charging;
+        const upd = () => {
+          $('iBatt').textContent = Math.round(b.level*100) + '%' + (b.charging ? '（充電中）' : '');
+          setCheck('batt', b.level < 0.2 && !b.charging ? 'warn' : 'pass', '電量', $('iBatt').textContent + (b.level < 0.2 && !b.charging ? '，電量低可能觸發省電' : ''));
+        };
+        upd();
+        b.onlevelchange = upd;
+        b.onchargingchange = () => { isCharging = b.charging; upd(); if (running){ if (!b.charging) sig('unplug'); log(b.charging ? '接上電源' : '拔除電源', 'warn'); } };
+      } catch(_) { $('iBatt').textContent = '無法讀取'; }
+    } else {
+      $('iBatt').textContent = '無法讀取（iPad 不提供）';
+      setCheck('batt', 'warn', '電量 / 省電', '無法讀取，請確認已關閉低耗電模式');
+    }
+
+    if (preflightBlock) showProblem(preflightBlock, '高度確定', '開始前的環境檢查');
+    else showOk('環境檢查通過', '按「開始檢測」並允許使用相機。');
+  }
+
+  $('iUA').textContent = UA;
   $('iHw').textContent = `CPU ${navigator.hardwareConcurrency || '?'} 核` + (navigator.deviceMemory ? `，記憶體約 ${navigator.deviceMemory} GB` : '');
 
-  // ---------- 按鈕 ----------
+  // ===== 按鈕 =====
   $('startBtn').onclick = async () => {
     running = true; testStart = Date.now(); drops = 0; longest = 0; lastTick = Date.now();
+    failSince = 0; hwFlagged = false; useBasic = false;
     $('sDrops').textContent = '0'; $('sLong').textContent = '–';
     $('startBtn').disabled = true; $('stopBtn').disabled = false;
     log('— 開始檢測 —');
     await start();
   };
   $('stopBtn').onclick = () => {
-    running = false; stopStream(false);
+    running = false; stopStream(false); pendingDiag = null;
     if (wakeLock) { wakeLock.release().catch(()=>{}); wakeLock = null; }
     $('startBtn').disabled = false; $('stopBtn').disabled = true;
     setBadge('', '已停止');
     log(`— 停止檢測：共 ${fmtDur(Date.now()-testStart)}，中斷 ${drops} 次，最長連續 ${fmtDur(longest)} —`);
+    if ($('problem').classList.contains('ok')) showOk('檢測已停止', `共 ${fmtDur(Date.now()-testStart)}，中斷 ${drops} 次。按「複製報告」可以把結果傳給客服。`);
   };
-  $('camSel').onchange = () => { if (running){ log('切換鏡頭'); start(); } };
+  $('camSel').onchange = () => { if (running){ log('切換鏡頭'); useBasic = false; start(); } };
   $('clearBtn').onclick = () => {
     logLines = []; causeCount = {}; $('log').textContent = ''; renderCauses();
-    $('diag').className = 'diag'; $('diag').innerHTML = '<div class="t">尚無中斷</div>';
     try { localStorage.removeItem(STORE); } catch(_){}
   };
   $('copyBtn').onclick = async () => {
     const causeTxt = Object.keys(causeCount).sort((a,b)=>causeCount[b]-causeCount[a])
       .map(k => `  ${CAUSES[k]?.name || k}：${causeCount[k]} 次`).join('\n') || '  （無）';
+    const chk = Object.values(checks).map(c => `  ${c.state === 'pass' ? '✓' : c.state === 'fail' ? '✕' : '!'} ${c.title}：${c.note}`).join('\n');
     const text = [
-      '【鏡頭檢測報告】',
-      `產生時間：${clock()}`,
-      `裝置：${navigator.userAgent}`,
-      `鏡頭：${$('iRes').textContent}　效能：${$('iHw').textContent}　電量：${$('iBatt').textContent}`,
-      `本次中斷次數：${drops}　最長連續：${$('sLong').textContent}　基準 FPS：${baselineFps || '–'}`,
-      '原因統計：', causeTxt, '', '事件紀錄：',
+      '【鏡頭檢測報告】', `產生時間：${clock()}`, `裝置：${UA}`,
+      `鏡頭：${$('iRes').textContent}　數量：${$('iCams').textContent}`,
+      `效能：${$('iHw').textContent}　電量：${$('iBatt').textContent}`,
+      `本次中斷：${drops} 次　最長連續：${$('sLong').textContent}　基準 FPS：${baselineFps || '–'}`,
+      '目前狀態：' + $('pTitle').textContent,
+      '環境檢查：', chk, '原因統計：', causeTxt, '', '事件紀錄：',
       ...logLines.map(l => `[${l.t}] ${l.m}`)
     ].join('\n');
     try { await navigator.clipboard.writeText(text); $('copyBtn').textContent = '已複製'; }
@@ -466,6 +665,7 @@ h2{font-size:.8rem;letter-spacing:.06em;color:var(--muted);margin:0 0 10px;font-
   };
 
   restore();
+  preflight();
 })();
 </script>
 </body>
