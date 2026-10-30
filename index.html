@@ -84,32 +84,34 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
 .empty{color:var(--muted);font-size:.88rem}
 /* 引導 */
 .pactions{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
-.pactions button.primary{padding:12px 18px;font-size:1rem}
+.pactions button.primary{padding:14px 22px;font-size:1.1rem}
 .modal{position:fixed;inset:0;z-index:50;background:rgba(10,16,13,.55);display:grid;place-items:center;
   padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-.sheet{background:var(--panel);color:var(--fg);border-radius:14px;width:min(560px,100%);max-height:100%;overflow:auto;padding:18px;display:grid;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.sheet{background:var(--panel);color:var(--fg);border-radius:16px;width:min(640px,100%);max-height:100%;overflow:auto;padding:18px;display:grid;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
 .g-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .g-top span{font-size:.82rem;color:var(--muted);font-weight:600}
 .g-top button{padding:6px 10px;border:none;background:var(--soft)}
 .g-prog{display:flex;gap:6px}
 .g-prog i{flex:1;height:5px;border-radius:3px;background:var(--line)}
 .g-prog i.on{background:var(--accent)}
-.g-num{font-size:.8rem;color:var(--accent);font-weight:700;letter-spacing:.04em}
-.g-title{font-size:1.35rem;font-weight:700;margin:2px 0 0;text-wrap:balance}
-.g-desc{margin:6px 0 0;font-size:1rem;line-height:1.6}
-.g-ill{border-radius:10px;background:var(--soft);padding:14px;display:grid;place-items:center;min-height:90px}
-.g-ill svg{max-width:100%;height:auto;color:var(--fg)}
+.g-num{font-size:.95rem;color:var(--accent);font-weight:700;letter-spacing:.04em}
+.g-title{font-size:1.6rem;font-weight:800;margin:4px 0 0;text-wrap:balance;line-height:1.3}
+.g-desc{margin:8px 0 0;font-size:1.15rem;line-height:1.7}
+.g-ill-wrap{display:grid;gap:10px;margin-top:14px}
+.g-ill{border-radius:12px;background:var(--soft);padding:10px;display:grid;place-items:center}
+.g-ill svg{width:100%;max-width:480px;height:auto;display:block}
+.g-live{background:var(--soft);border-radius:12px;padding:12px}
 .crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;justify-content:center}
 .crumbs span{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:.95rem;font-weight:600}
 .crumbs span.last{background:var(--accent);border-color:var(--accent);color:#fff}
 .crumbs em{font-style:normal;color:var(--muted);font-size:1.1rem}
 .g-live{width:100%;display:grid;gap:8px}
-.g-live .big{font-size:2.2rem;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+.g-live .big{font-size:2.6rem;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
 .g-live .bar{height:12px;border-radius:6px}
-.g-live .hint{text-align:center;font-size:.9rem;font-weight:600}
+.g-live .hint{text-align:center;font-size:1.1rem;font-weight:700}
 .g-live .hint.good{color:var(--ok)} .g-live .hint.bad{color:var(--bad)}
 .g-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
-.g-actions button{padding:12px 18px;font-size:1rem}
+.g-actions button{padding:14px 22px;font-size:1.1rem;border-radius:10px}
 .g-actions .grow{margin-right:auto}
 .g-result{text-align:center;display:grid;gap:8px;justify-items:center}
 .g-result .mark{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-size:2rem;color:#fff;font-weight:700}
@@ -117,6 +119,7 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
 .spin{width:44px;height:44px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--accent);animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion: reduce){.spin{animation-duration:3s}}
+@media (max-width:520px){.g-title{font-size:1.35rem}.g-desc{font-size:1.05rem}.g-actions button{flex:1 1 auto}}
 .urlbox{font-family:var(--mono);font-size:.9rem;background:var(--soft);padding:8px 10px;border-radius:8px;word-break:break-all}
 .log{max-height:360px;overflow:auto;font-family:var(--mono);font-size:.8rem;border-top:1px solid var(--line)}
 .log div{padding:6px 2px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:auto 1fr;gap:10px}
@@ -247,158 +250,402 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   }
   const BROWSER = detectBrowser();
 
-  // ===== 問題定義：標題、說明、引導步驟 =====
-  // 步驟格式：{ t:標題, d:說明, path:[設定路徑], live:'luma'|'move', icon }
-  const S = (t, d, path, extra) => Object.assign({ t, d, path }, extra || {});
+  // ===== 引導示意圖（平板畫面模擬）=====
+  // 平板螢幕一律畫成淺色，看起來像真實裝置；橘色圈 = 要點的位置
+  const PIC = (() => {
+    const W = 400, H = 290, SX = 32, SY = 22, SW = 336, SH = 236;
+    const HL = '#ff7a1a', BLUE = '#0a84ff', GREEN = '#34c759', GREY = '#8e8e93', INK = '#1c1c1e', LINE = '#d8d8dc', BG = '#f2f2f7';
+    const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const T = (x, y, t, o={}) => `<text x="${x}" y="${y}" font-size="${o.s||11}" fill="${o.c||INK}" font-weight="${o.w||400}" text-anchor="${o.a||'start'}">${esc(t)}</text>`;
+    const R = (x, y, w, h, o={}) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${o.r||0}" fill="${o.f||'none'}" ${o.s?`stroke="${o.s}" stroke-width="${o.sw||1}"`:''}/>`;
+    const box = (x, y, w, h, r=8) => `<rect x="${x-3}" y="${y-3}" width="${w+6}" height="${h+6}" rx="${r}" fill="none" stroke="${HL}" stroke-width="3"/>`;
+    // 點擊標記：脈動圓點 + 「點這裡」標籤（標籤放在目標旁邊，不蓋住文字）
+    // side：right / left / below / above；標籤以圓點為基準
+    const tap = (x, y, label='點這裡', side='right', gap=14) => {
+      const tw = label.length * 13 + 16, th = 24;
+      let bx, by;
+      if (side === 'right'){ bx = x + gap; by = y - th/2; }
+      else if (side === 'left'){ bx = x - gap - tw; by = y - th/2; }
+      else if (side === 'below'){ bx = x - tw/2; by = y + gap; }
+      else { bx = x - tw/2; by = y - gap - th; }
+      bx = Math.max(2, Math.min(SW - tw - 2, bx));
+      return `<g class="pic-tap"><circle cx="${x}" cy="${y}" r="12" fill="${HL}" opacity=".3"><animate attributeName="r" values="9;19;9" dur="1.6s" repeatCount="indefinite"/><animate attributeName="opacity" values=".5;.05;.5" dur="1.6s" repeatCount="indefinite"/></circle>
+        <circle cx="${x}" cy="${y}" r="6.5" fill="${HL}" stroke="#fff" stroke-width="2"/>
+        <rect x="${bx}" y="${by}" width="${tw}" height="${th}" rx="12" fill="${HL}" stroke="#fff" stroke-width="1.5"/>${T(bx + tw/2, by + 17, label, {s:13, c:'#fff', w:700, a:'middle'})}</g>`;
+    };
+    const arrow = (x1, y1, x2, y2, c=HL) => {
+      const a = Math.atan2(y2-y1, x2-x1), h = 10;
+      return `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="${c}" stroke-width="5" stroke-linecap="round"/>
+        <path d="M${x2} ${y2} L${x2 - h*Math.cos(a-0.5)} ${y2 - h*Math.sin(a-0.5)} M${x2} ${y2} L${x2 - h*Math.cos(a+0.5)} ${y2 - h*Math.sin(a+0.5)}" stroke="${c}" stroke-width="5" stroke-linecap="round"/>`;
+    };
+    const device = (inner, o={}) => `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.alt||'操作示意圖')}" style="font-family:-apple-system,'PingFang TC','Noto Sans TC','Microsoft JhengHei',sans-serif">
+      <rect x="20" y="10" width="360" height="260" rx="24" fill="#2b2f33"/>
+      <circle cx="200" cy="16" r="2.5" fill="#555"/>
+      <svg x="${SX}" y="${SY}" width="${SW}" height="${SH}"><rect width="${SW}" height="${SH}" rx="10" fill="${o.bg||BG}"/>${inner}</svg>${o.over||''}</svg>`;
+    const homeBar = (y=SH-8) => R(SW/2-40, y, 80, 4, {r:2, f:'#00000066'});
+
+    // 主畫面 App 圖示
+    const appIcon = (x, y, kind) => {
+      const g = { 設定:['#8e8e93', `<circle cx="${x+17}" cy="${y+17}" r="9" fill="none" stroke="#fff" stroke-width="3"/><circle cx="${x+17}" cy="${y+17}" r="3" fill="#fff"/>`],
+        Safari:['#fff', `<circle cx="${x+17}" cy="${y+17}" r="12" fill="${BLUE}"/><path d="M${x+22} ${y+12} L${x+15} ${y+19} L${x+12} ${y+22} L${x+19} ${y+15}Z" fill="#fff"/><path d="M${x+22} ${y+12} L${x+19} ${y+15} L${x+15} ${y+19}Z" fill="#ff3b30"/>`],
+        Chrome:['#fff', `<circle cx="${x+17}" cy="${y+17}" r="12" fill="#ea4335"/><path d="M${x+17} ${y+17} L${x+5} ${y+17} A12 12 0 0 0 ${x+23} ${y+27}Z" fill="#34a853"/><path d="M${x+17} ${y+17} L${x+23} ${y+27} A12 12 0 0 0 ${x+29} ${y+17}Z" fill="#fbbc05"/><circle cx="${x+17}" cy="${y+17}" r="5" fill="#4285f4" stroke="#fff" stroke-width="2"/>`],
+        相機:['#3a3a3c', `<rect x="${x+7}" y="${y+11}" width="20" height="14" rx="3" fill="#fff"/><circle cx="${x+17}" cy="${y+18}" r="4" fill="#3a3a3c"/>`],
+        照片:['#fff', `<circle cx="${x+17}" cy="${y+12}" r="5" fill="#ff9f0a"/><circle cx="${x+12}" cy="${y+20}" r="5" fill="#30d158"/><circle cx="${x+22}" cy="${y+20}" r="5" fill="#0a84ff"/>`],
+        訊息:[GREEN, `<ellipse cx="${x+17}" cy="${y+16}" rx="10" ry="8" fill="#fff"/>`],
+        LINE:['#06c755', T(x+17, y+21, 'LINE', {s:9, c:'#fff', w:800, a:'middle'})],
+        Play:['#fff', `<path d="M${x+11} ${y+8} L${x+27} ${y+17} L${x+11} ${y+26}Z" fill="#34a853"/>`],
+        時鐘:['#1c1c1e', `<circle cx="${x+17}" cy="${y+17}" r="11" fill="#fff"/><path d="M${x+17} ${y+10} V${y+17} L${x+22} ${y+20}" stroke="#1c1c1e" stroke-width="2" fill="none"/>`],
+      }[kind] || [GREY, ''];
+      return R(x, y, 34, 34, {r:9, f:g[0], s:'#00000014'}) + g[1] + T(x+17, y+47, kind, {s:9, a:'middle'});
+    };
+    const home = (target) => {
+      const apps = ['訊息','照片','相機','時鐘','LINE','Play','設定','Safari','Chrome'];
+      let s = `<rect width="${SW}" height="${SH}" fill="url(#hg)"/><defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfe3ff"/><stop offset="1" stop-color="#f7d9e8"/></linearGradient></defs>`;
+      let tx = 0, ty = 0;
+      apps.forEach((a, i) => { const x = 30 + (i % 5) * 60, y = 22 + Math.floor(i / 5) * 62; s += appIcon(x, y, a); if (a === target){ tx = x; ty = y; } });
+      s += R(40, SH-48, SW-80, 40, {r:14, f:'#ffffff88'});
+      return s + homeBar() + (target ? box(tx, ty, 34, 50, 11) + tap(tx + 30, ty + 30, '點這裡', 'below', 30) : '');
+    };
+
+    // 設定畫面（左邊選單、右邊內容）
+    const settings = ({ left, sel, title, rows, tapLeft, tapRow, label }) => {
+      let s = R(0, 0, 112, SH, {f:'#fff'}) + R(112, 0, 1, SH, {f:LINE});
+      s += T(12, 22, '設定', {s:15, w:700});
+      let tapXY = null;
+      left.forEach((it, i) => {
+        const y = 36 + i * 24, on = it === sel;
+        if (on) s += R(6, y, 100, 21, {r:6, f: tapLeft ? '#ffe6d3' : '#e5f0ff'});
+        s += R(12, y+4, 13, 13, {r:3, f:['#ff9500','#34c759','#0a84ff','#5856d6','#ff2d55','#8e8e93','#30b0c7'][i%7]});
+        s += T(31, y+15, it, {s:10.5, c: on && !tapLeft ? BLUE : INK});
+        if (on && tapLeft) tapXY = [60, y+10, 100, 21, y];
+      });
+      if (title) s += T(124, 22, title, {s:14, w:700});
+      (rows || []).forEach((r, i) => {
+        const y = 36 + i * 30;
+        s += R(122, y, 204, 26, {r:7, f:'#fff'});
+        s += T(132, y+17, r.label, {s:11});
+        if (r.type === 'toggle'){ s += R(288, y+5, 30, 16, {r:8, f: r.on ? GREEN : '#d1d1d6'}) + `<circle cx="${r.on?310:296}" cy="${y+13}" r="6.5" fill="#fff"/>`; }
+        else if (r.type === 'check'){ if (r.on) s += T(312, y+17, '✓', {s:13, c:BLUE, w:700, a:'end'}); }
+        else { if (r.value) s += T(300, y+17, r.value, {s:10, c:GREY, a:'end'}); s += T(314, y+17, '›', {s:14, c:GREY, a:'end'}); }
+        if (i === tapRow) tapXY = [r.type === 'toggle' ? 303 : 224, y+13, 204, 26, y, r.type === 'toggle'];
+      });
+      if (tapXY){
+        const [x, y, w, h, top, tg] = tapXY;
+        if (tapLeft) s += box(6, top, 100, 21, 7) + tap(18, y, label || '點這裡', 'right', 96);
+        else s += box(122, top, 204, 26, 8) + tap(tg ? 303 : 312, y, label || '點這裡', 'below', 16);
+      }
+      return s;
+    };
+
+    // 瀏覽器網址列
+    const bar = (kind) => {
+      const isSaf = (kind || (isIOS ? 'safari' : 'chrome')) !== 'chrome';
+      let s = R(0, 0, SW, 34, {f:'#fafafa'}) + R(0, 34, SW, 1, {f:LINE});
+      s += R(40, 6, SW-80, 22, {r:11, f:'#e9e9ee'});
+      s += isSaf ? T(56, 21, 'aA', {s:11, w:700}) : `<circle cx="56" cy="17" r="6" fill="none" stroke="${INK}" stroke-width="1.5"/><path d="M53 17h6M56 14v6" stroke="${INK}" stroke-width="1.2"/>`;
+      s += T(SW/2, 21, 'hby0413.github.io', {s:10.5, c:'#3a3a3c', a:'middle'});
+      s += `<path d="M${SW-62} 12 a5 5 0 1 0 2 6" stroke="${INK}" stroke-width="1.6" fill="none"/><path d="M${SW-60} 10 v4 h-4" stroke="${INK}" stroke-width="1.6" fill="none"/>`;
+      return s;
+    };
+    const pageBody = () => R(16, 50, SW-32, 18, {r:4, f:'#e5e5ea'}) + R(16, 76, SW-120, 12, {r:4, f:'#e5e5ea'}) + R(16, 100, SW-32, 100, {r:8, f:'#1c1c1e'});
+    const menu = (x, y, items, hit, w=150) => {
+      let s = `<rect x="${x}" y="${y}" width="${w}" height="${items.length*28+8}" rx="12" fill="#fff" stroke="${LINE}"/>`;
+      let t = '';
+      items.forEach((it, i) => {
+        const yy = y + 4 + i * 28;
+        if (i) s += R(x+10, yy, w-20, 1, {f:LINE});
+        s += T(x+14, yy+19, it, {s:11.5, w: i === hit ? 700 : 400});
+        if (i === hit){
+          const dx = x + w - 16, dy = yy + 14;
+          const side = (x + w + 80 < SW) ? 'right' : (x - 80 > 0 ? 'left' : 'above');
+          t = box(x+4, yy+2, w-8, 24, 8) + tap(dx, dy, '點這裡', side, side === 'right' ? 30 : side === 'left' ? (w - 12) : 16);
+        }
+      });
+      return s + t;
+    };
+
+    const scenes = {
+      home: (app) => device(home(app), {alt:'主畫面，點「'+app+'」'}),
+      settings: (o) => device(settings(o), {alt:'設定畫面'}),
+      safariAa: () => device(bar() + pageBody() + box(44, 8, 26, 18, 9) + tap(57, 30, '點這裡', 'below', 10)),
+      safariMenu: () => device(bar() + pageBody() + menu(40, 38, ['顯示閱讀器','縮放文字','網站設定','隱藏工具列'], 2)),
+      safariSite: () => device(bar() + `<rect x="0" y="70" width="${SW}" height="${SH-70}" rx="14" fill="#fff"/>` + T(SW/2, 96, 'hby0413.github.io 的設定', {s:13, w:700, a:'middle'})
+        + T(24, 130, '相機', {s:13, w:700})
+        + ['詢問','拒絕','允許'].map((o, i) => R(24 + i*98, 142, 90, 34, {r:9, f: i === 1 ? '#e5e5ea' : BG, s:LINE}) + T(69 + i*98, 164, o, {s:13, a:'middle', w: i===2?700:400})).join('')
+        + box(220, 142, 90, 34, 11) + tap(296, 159, '點這裡', 'below', 24)),
+      chromeLock: () => device(bar('chrome') + pageBody() + box(44, 8, 24, 18, 9) + tap(56, 30, '點這裡', 'below', 10)),
+      chromePerm: () => device(bar('chrome') + pageBody() + `<rect x="20" y="40" width="220" height="120" rx="12" fill="#fff" stroke="${LINE}"/>`
+        + T(34, 62, 'hby0413.github.io', {s:12, w:700}) + T(34, 84, '連線安全', {s:10.5, c:GREY})
+        + R(30, 98, 200, 1, {f:LINE}) + T(34, 122, '相機', {s:12}) + R(190, 110, 34, 18, {r:9, f:'#d1d1d6'}) + `<circle cx="199" cy="119" r="7" fill="#fff"/>`
+        + box(186, 108, 42, 22, 11) + tap(207, 119, '點這裡打開', 'below', 16)),
+      reload: () => device(bar() + pageBody() + box(SW-72, 8, 22, 18, 9) + tap(SW-61, 30, '點這裡', 'below', 10)),
+      copyUrl: () => device(bar() + pageBody() + box(110, 8, 116, 18, 9) + `<rect x="${SW/2-36}" y="38" width="72" height="26" rx="8" fill="#1c1c1e"/>` + T(SW/2, 55, isIOS ? '拷貝' : '複製', {s:12, c:'#fff', w:700, a:'middle'}) + tap(SW/2+38, 51, isIOS ? '再點拷貝' : '再點複製')
+        + T(SW/2, 82, '① 先按住網址不放', {s:12, c:HL, w:700, a:'middle'})),
+      pasteUrl: () => device(R(0,0,SW,34,{f:'#fafafa'}) + R(40, 6, SW-80, 22, {r:11, f:'#fff', s:BLUE, sw:1.5}) + T(56, 21, '|', {s:12, c:BLUE})
+        + `<rect x="50" y="38" width="120" height="26" rx="8" fill="#1c1c1e"/>` + T(110, 55, '貼上並前往', {s:12, c:'#fff', w:700, a:'middle'}) + tap(172, 51, '點這裡')),
+      inappMenu: () => device(R(0,0,SW,36,{f:'#fff'}) + T(16, 23, '✕', {s:14}) + T(SW/2, 23, '鏡頭穩定度檢測', {s:12, w:600, a:'middle'})
+        + T(SW-20, 24, '⋯', {s:18, w:800, a:'end'}) + R(0,36,SW,1,{f:LINE}) + pageBody() + box(SW-38, 8, 26, 20, 9) + tap(SW-25, 18, '點這裡', 'left')),
+      inappOpen: (name) => device(R(0,0,SW,36,{f:'#fff'}) + pageBody() + `<rect x="0" y="${SH-120}" width="${SW}" height="120" rx="14" fill="#fff"/>`
+        + menu(16, SH-112, ['分享','拷貝連結', '用 ' + name + ' 開啟'], 2, SW-32)),
+      multiSwipe: () => device(home('') + arrow(SW/2, SH-14, SW/2, SH-110) + T(SW/2+14, SH-70, '從最底下往上滑', {s:13, c:HL, w:700}) + T(SW/2+14, SH-52, '滑到一半停住', {s:13, c:HL, w:700})),
+      multiButton: () => device(home('') + R(0, SH-26, SW, 26, {f:'#00000022'}) + T(SW/2-60, SH-8, '|||', {s:15, w:800, a:'middle'}) + T(SW/2, SH-8, '○', {s:15, a:'middle'}) + T(SW/2+60, SH-8, '‹', {s:16, a:'middle'})
+        + box(SW/2-74, SH-24, 28, 20, 7) + tap(SW/2-60, SH-13)),
+      cards: () => device(`<rect width="${SW}" height="${SH}" fill="#3a3a3c"/>` + [0,1,2].map(i => R(26 + i*102, 50, 88, 130, {r:10, f:'#f2f2f7'}) + T(70 + i*102, 42, ['LINE','相機','Safari'][i], {s:11, c:'#fff', a:'middle'})).join('')
+        + box(26, 50, 88, 130, 12) + box(128, 50, 88, 130, 12) + arrow(70, 160, 70, 64, '#fff') + arrow(172, 160, 172, 64, '#fff')
+        + T(SW/2, SH-20, '把用到相機的程式往上滑掉', {s:13, c:'#ffd27a', w:700, a:'middle'})),
+      pageBtn: (which) => {
+        const L = ['開始檢測','停止','前鏡頭 ▾'], X = [16, 104, 168];
+        let s = R(0,0,SW,SH,{f:'#f3f5f4'}) + R(16, 14, SW-32, 150, {r:8, f:'#000'}) + T(30, 34, '● 運作中', {s:11, c:'#fff', w:700});
+        L.forEach((l, i) => { const w = i ? 56 : 80; s += R(X[i], 176, i===2?90:w, 30, {r:8, f: i ? '#fff' : '#1f7a5c', s:'#d9e0dc'}) + T(X[i] + (i===2?45:w/2), 196, l, {s:11, c: i ? INK : '#fff', w:600, a:'middle'}); });
+        const i = L.findIndex(l => l.startsWith(which)), w = i===2 ? 90 : i ? 56 : 80;
+        return device(s + box(X[i], 176, w, 30, 10) + tap(X[i] + w - 8, 186, '點這裡', 'below', 26));
+      },
+      autoRestart: () => device(R(0,0,SW,SH,{f:'#f3f5f4'}) + R(16, 14, SW-32, 150, {r:8, f:'#000'})
+        + `<circle cx="${SW/2}" cy="80" r="22" fill="none" stroke="#555" stroke-width="5"/><path d="M${SW/2} 58 a22 22 0 0 1 22 22" stroke="${GREEN}" stroke-width="5" fill="none"/>`
+        + T(SW/2, 130, '網頁會自動重新開啟鏡頭', {s:13, c:'#fff', w:700, a:'middle'}) + T(SW/2, 198, '您只要按下面的「做好了」就好', {s:14, w:800, a:'middle'})),
+      keepOpen: () => device(R(0,0,SW,SH,{f:'#f3f5f4'}) + R(16, 14, SW-32, 120, {r:8, f:'#000'}) + T(30, 34, '● 運作中', {s:11, c:'#fff', w:700})
+        + `<circle cx="70" cy="178" r="22" fill="${GREEN}"/><path d="M59 178 l8 8 l15 -16" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/>`
+        + T(100, 176, '讓這個畫面一直開著', {s:14, w:800}) + T(100, 196, '不要關螢幕、不要切到別的程式', {s:12, c:'#c0392b', w:700}), {alt:'保持畫面開著'}),
+      lens: () => `<svg viewBox="0 0 400 220" role="img" aria-label="檢查鏡頭是否被遮住" style="font-family:-apple-system,'PingFang TC','Noto Sans TC',sans-serif">
+        <rect x="20" y="30" width="220" height="160" rx="20" fill="#2b2f33"/><rect x="32" y="42" width="196" height="136" rx="9" fill="#f2f2f7"/>
+        <circle cx="130" cy="36" r="4" fill="#111"/><rect x="116" y="24" width="30" height="20" rx="4" fill="#f5c84b" stroke="#c99a20" transform="rotate(-8 130 34)"/>
+        ${box(110,22,40,26,8)}${arrow(250, 70, 160, 38)}
+        ${T(254, 92, '鏡頭在這裡', {s:15, c:HL, w:800})}${T(254, 116, '（正面最上面的', {s:12, c:INK})}${T(254, 134, '小黑點）', {s:12, c:INK})}
+        ${T(254, 164, '貼紙、殼子、手指', {s:13, c:'#c0392b', w:700})}${T(254, 184, '都要拿開', {s:13, c:'#c0392b', w:700})}</svg>`,
+      light: () => `<svg viewBox="0 0 400 200" role="img" aria-label="移到明亮的地方" style="font-family:-apple-system,'PingFang TC','Noto Sans TC',sans-serif">
+        <circle cx="110" cy="80" r="34" fill="#ffd23f"/>${[0,1,2,3,4,5,6,7].map(i => { const a = i*Math.PI/4; return `<path d="M${110+44*Math.cos(a)} ${80+44*Math.sin(a)} L${110+58*Math.cos(a)} ${80+58*Math.sin(a)}" stroke="#ffb703" stroke-width="5" stroke-linecap="round"/>`; }).join('')}
+        <rect x="220" y="40" width="120" height="90" rx="12" fill="#2b2f33"/><rect x="228" y="48" width="104" height="74" rx="6" fill="#fff6d6"/>
+        ${T(200, 175, '開燈，或靠近窗戶', {s:15, w:700, a:'middle'})}</svg>`,
+      wave: () => `<svg viewBox="0 0 400 210" role="img" aria-label="在鏡頭前揮手" style="font-family:-apple-system,'PingFang TC','Noto Sans TC',sans-serif">
+        <rect x="40" y="30" width="200" height="150" rx="18" fill="#2b2f33"/><rect x="50" y="40" width="180" height="130" rx="8" fill="#f2f2f7"/><circle cx="140" cy="35" r="3" fill="#111"/>
+        <g transform="translate(270 50)"><path d="M20 90 C0 60 6 30 16 30 C24 30 24 50 26 58 L26 10 C26 0 40 0 40 10 L40 50 L40 4 C40 -6 54 -6 54 4 L54 50 L54 10 C54 0 68 0 68 10 L68 56 L68 26 C68 16 82 16 82 26 L82 80 C82 110 50 120 20 90Z" fill="#f7c59f" stroke="#c98a5a" stroke-width="2">
+          <animateTransform attributeName="transform" type="rotate" values="-12 40 100;12 40 100;-12 40 100" dur="1s" repeatCount="indefinite"/></path></g>
+        ${T(200, 202, '對著鏡頭左右揮手', {s:15, w:700, a:'middle'})}</svg>`,
+      powerIOS: () => `<svg viewBox="0 0 400 230" role="img" aria-label="同時按住上方按鈕和音量鍵" style="font-family:-apple-system,'PingFang TC','Noto Sans TC',sans-serif">
+        <rect x="80" y="30" width="240" height="170" rx="22" fill="#2b2f33"/><rect x="92" y="42" width="216" height="146" rx="10" fill="#f2f2f7"/>
+        <rect x="250" y="22" width="40" height="8" rx="3" fill="${HL}"/><rect x="320" y="60" width="8" height="28" rx="3" fill="${HL}"/><rect x="320" y="94" width="8" height="28" rx="3" fill="#555"/>
+        ${T(270, 16, '① 上方按鈕', {s:12, c:HL, w:700, a:'middle'})}${T(336, 78, '② 音量鍵', {s:12, c:HL, w:700})}
+        ${T(200, 105, '兩個一起按住', {s:15, w:700, a:'middle'})}${T(200, 128, '大約 3 秒', {s:13, c:GREY, a:'middle'})}</svg>`,
+      slideOff: () => device(`<rect width="${SW}" height="${SH}" fill="#2c2c2e"/>` + R(SW/2-110, 40, 220, 44, {r:22, f:'#ffffffdd'}) + `<circle cx="${SW/2-88}" cy="62" r="18" fill="#fff" stroke="#ff3b30" stroke-width="2"/>`
+        + T(SW/2-88, 67, '⏻', {s:15, c:'#ff3b30', a:'middle'}) + T(SW/2+10, 67, '滑動來關機', {s:13, c:INK, a:'middle'}) + arrow(SW/2-60, 100, SW/2+80, 100)
+        + T(SW/2, 132, '把紅色按鈕往右滑', {s:14, c:'#ffd27a', w:700, a:'middle'}) + T(SW/2, 156, '等 30 秒後，再按住上方按鈕開機', {s:12, c:'#fff', a:'middle'})),
+      powerAndroid: () => device(`<rect width="${SW}" height="${SH}" fill="#2c2c2e"/>` + [['關機','#ff3b30'],['重新啟動',GREEN]].map((b, i) => `<circle cx="${SW/2 - 60 + i*120}" cy="90" r="28" fill="${b[1]}"/>` + T(SW/2 - 60 + i*120, 140, b[0], {s:13, c:'#fff', w:700, a:'middle'})).join('')
+        + box(SW/2-91, 59, 62, 62, 31) + tap(SW/2-60, 90, '點這裡') + T(SW/2, 190, '長按側邊電源鍵就會出現這個畫面', {s:12, c:'#fff', a:'middle'})),
+      heat: () => `<svg viewBox="0 0 400 210" role="img" aria-label="讓平板降溫" style="font-family:-apple-system,'PingFang TC','Noto Sans TC',sans-serif">
+        <rect x="60" y="40" width="160" height="120" rx="16" fill="#c0392b" opacity=".25"/><rect x="72" y="30" width="160" height="120" rx="16" fill="#2b2f33"/>
+        ${[0,1,2].map(i => `<path d="M${110+i*40} 22 q-8 -10 0 -18 q8 -8 0 -16" stroke="#ff5a3c" stroke-width="3" fill="none"/>`).join('')}
+        ${arrow(60, 110, 20, 150)}${T(30, 175, '拿掉保護殼', {s:13, c:HL, w:700})}
+        <rect x="270" y="60" width="90" height="70" rx="10" fill="#e8f4ff"/>${T(315, 102, '通風處', {s:13, c:BLUE, w:700, a:'middle'})}
+        ${T(200, 202, '放在通風的地方，不要曬太陽', {s:14, w:700, a:'middle'})}</svg>`,
+      charger: () => `<svg viewBox="0 0 400 200" role="img" aria-label="接上充電器" style="font-family:-apple-system,'PingFang TC','Noto Sans TC',sans-serif">
+        <rect x="60" y="30" width="180" height="130" rx="18" fill="#2b2f33"/><rect x="70" y="40" width="160" height="110" rx="8" fill="#f2f2f7"/>
+        <rect x="130" y="80" width="40" height="22" rx="4" fill="none" stroke="${GREEN}" stroke-width="3"/><rect x="134" y="84" width="28" height="14" rx="2" fill="${GREEN}"/><rect x="170" y="86" width="4" height="10" fill="${GREEN}"/>
+        <path d="M240 95 H300 C320 95 330 110 340 110" stroke="#888" stroke-width="6" fill="none"/><rect x="336" y="98" width="30" height="24" rx="4" fill="#ddd" stroke="#999"/>
+        ${T(200, 188, '用平板的充電線接上插座', {s:14, w:700, a:'middle'})}</svg>`,
+      ccOpen: () => device(home('') + arrow(SW-14, 6, SW-40, 90) + R(SW-196, 156, 180, 30, {r:15, f:HL}) + T(SW-106, 176, '從右上角往下滑', {s:14, c:'#fff', w:700, a:'middle'})),
+      ccDnd: (ios) => device(`<rect width="${SW}" height="${SH}" fill="#3a3a3c"/>` + [0,1,2,3].map(i => R(30 + (i%2)*70, 30 + Math.floor(i/2)*70, 60, 60, {r:14, f:'#ffffff33'})).join('')
+        + R(180, 30, 130, 60, {r:14, f:'#ffffff33'}) + `<circle cx="206" cy="60" r="14" fill="#5e5ce6"/><path d="M210 52 a9 9 0 1 0 4 14 a7 7 0 0 1 -4 -14z" fill="#fff"/>`
+        + T(228, 65, ios ? '專注模式' : '勿擾', {s:12, c:'#fff', w:700}) + box(180, 30, 130, 60, 16) + tap(206, 60, '點這裡', 'below', 26)
+        + T(SW/2, SH-26, ios ? '選「勿擾模式」，月亮變亮就好了' : '月亮圖示變亮就好了', {s:12, c:'#ffd27a', w:700, a:'middle'})),
+      split: () => device(R(0,0,SW/2-2,SH,{f:'#fff'}) + R(SW/2+2,0,SW/2-2,SH,{f:'#e5e5ea'}) + R(SW/2-3, SH/2-20, 6, 40, {r:3, f:'#888'})
+        + `<path d="M${SW/2-40} ${SH/2-40} L${SW/2+40} ${SH/2+40} M${SW/2+40} ${SH/2-40} L${SW/2-40} ${SH/2+40}" stroke="#ff3b30" stroke-width="8" stroke-linecap="round"/>`
+        + T(SW/2, SH-20, '不要兩個畫面並排，只開這個網頁', {s:13, c:'#ff3b30', w:700, a:'middle'})),
+      cable: () => `<svg viewBox="0 0 400 190" role="img" aria-label="檢查外接設備" style="font-family:-apple-system,'PingFang TC','Noto Sans TC',sans-serif">
+        <rect x="40" y="30" width="170" height="120" rx="18" fill="#2b2f33"/><rect x="50" y="40" width="150" height="100" rx="8" fill="#f2f2f7"/>
+        <path d="M210 90 H260" stroke="#888" stroke-width="8"/><rect x="258" y="70" width="70" height="40" rx="8" fill="#ccc" stroke="#999"/>${T(293, 95, '外接設備', {s:11, a:'middle'})}
+        ${box(206,80,58,20,6)}${T(200, 178, '接頭有沒有鬆掉？先拔掉再試試看', {s:14, w:700, a:'middle'})}</svg>`,
+      note: () => `<svg viewBox="0 0 400 190" role="img" aria-label="記下時間" style="font-family:-apple-system,'PingFang TC','Noto Sans TC',sans-serif">
+        <circle cx="120" cy="85" r="50" fill="#fff" stroke="#2b2f33" stroke-width="5"/><path d="M120 50 V85 L145 100" stroke="#2b2f33" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <rect x="220" y="40" width="120" height="100" rx="8" fill="#fff8d6" stroke="#d9c26a"/>${[0,1,2].map(i => R(234, 62 + i*22, 92, 3, {f:'#c9b15a'})).join('')}
+        ${T(200, 175, '記下斷掉的時間，傳給客服', {s:14, w:700, a:'middle'})}</svg>`,
+      cameraApp: () => device(`<rect width="${SW}" height="${SH}" fill="#000"/>` + R(20, 20, SW-100, SH-40, {r:6, f:'#4a5a6a'}) + `<circle cx="${SW-40}" cy="${SH/2}" r="20" fill="#fff"/>`
+        + `<circle cx="${SW-40}" cy="${SH/2+60}" r="14" fill="#333"/><path d="M${SW-48} ${SH/2+56} a8 8 0 0 1 15 0 M${SW-32} ${SH/2+64} a8 8 0 0 1 -15 0" stroke="#fff" stroke-width="2" fill="none"/>`
+        + box(SW-57, SH/2+43, 34, 34, 17) + tap(SW-40, SH/2+60, '換鏡頭', 'left') + T(SW/2-40, SH/2, '看得到畫面嗎？', {s:15, c:'#fff', w:700, a:'middle'})),
+      url: () => device(bar() + pageBody() + box(110, 8, 116, 18, 9) + T(SW/2, 54, '網址要是 https:// 開頭', {s:13, c:HL, w:700, a:'middle'})),
+    };
+    return (spec) => { const [name, ...args] = Array.isArray(spec) ? spec : [spec]; return scenes[name] ? scenes[name](...args) : ''; };
+  })();
+
+  // ===== 問題定義：說明與圖文引導 =====
+  // 每一步只做一個動作；pic 是示意圖，live 是即時檢查
+  const S = (t, d, pic, extra) => Object.assign({ t, d, pic }, extra || {});
+  const IL = ['飛航模式','Wi-Fi','藍牙','一般','螢幕顯示與亮度','電池','Safari','螢幕使用時間'];      // iPad 設定左邊選單
+  const AL = ['連線','通知','顯示','電池','應用程式','一般管理','軟體更新','協助工具'];              // Android 設定左邊選單
+  const iSet = (sel, title, rows, tapRow, label) => ['settings', { left: IL, sel, title, rows, tapRow, label }];
+  const iLeft = (sel) => ['settings', { left: IL, sel, tapLeft: true }];
+  const aSet = (sel, title, rows, tapRow, label) => ['settings', { left: AL, sel, title, rows, tapRow, label }];
+  const aLeft = (sel) => ['settings', { left: AL, sel, tapLeft: true }];
+  const BR = isIOS ? 'Safari' : 'Chrome';
+
+  const openSettings = S('打開「設定」', '回到平板的主畫面（桌面），找到灰色齒輪圖案的「設定」，用手指點一下。', ['home','設定']);
+  const goHome = isIOS ? '先從螢幕最下面往上滑，回到主畫面。' : '先點螢幕下方中間的「○」，回到主畫面。';
+  const UPDATE = isIOS ? [
+      Object.assign({}, openSettings, { d: goHome + '再點灰色齒輪圖案的「設定」。' }),
+      S('點左邊的「一般」', '在左邊的清單裡找到「一般」，點一下。', iLeft('一般')),
+      S('點右邊的「軟體更新」', '如果看到「立即更新」或「下載並安裝」，點下去，照畫面指示做就好。更新時要接上充電器。',
+        iSet('一般', '一般', [{label:'關於本機'},{label:'軟體更新', value:'有可用更新'},{label:'AirDrop'},{label:'iPad 儲存空間'}], 1)),
+    ] : [
+      Object.assign({}, openSettings, { d: goHome + '再點齒輪圖案的「設定」。' }),
+      S('點左邊的「軟體更新」', '在清單最下面找到「軟體更新」，點一下。', aLeft('軟體更新')),
+      S('點「下載並安裝」', '如果有新版本就點下去，照畫面指示做。更新時要接上充電器。',
+        aSet('軟體更新', '軟體更新', [{label:'下載並安裝'},{label:'自動下載'},{label:'上次更新'}], 0)),
+    ];
+  const RESTART = isIOS ? [
+      S('同時按住兩個按鈕', '用手同時按住平板「上方的按鈕」和「旁邊的音量鍵」，大約 3 秒，等畫面出現「滑動來關機」。', ['powerIOS']),
+      S('滑動關機，再重新開機', '把紅色按鈕往右滑。畫面全黑後等 30 秒，再按住上方按鈕直到看到蘋果標誌。', ['slideOff']),
+    ] : [
+      S('按住側邊的電源鍵', '按住平板側邊的電源鍵約 3 秒，畫面會出現「關機」和「重新啟動」。', ['powerAndroid']),
+      S('點「重新啟動」', '點「重新啟動」，等平板自己關掉再打開，大約 1 分鐘。', ['powerAndroid']),
+    ];
+  const CLOSE_APPS = isIOS ? [
+      S('打開「最近用過的程式」', '用一根手指，從螢幕最下面的邊邊往上滑，滑到一半時停住不要放開，就會看到所有開著的程式。', ['multiSwipe']),
+      S('把用到相機的程式往上滑掉', '看到 LINE、視訊、相機、掃碼這類的程式，就用手指把它往上「甩」出去。全部甩掉也沒關係。', ['cards']),
+    ] : [
+      S('打開「最近用過的程式」', '點螢幕最下面左邊三條直線「|||」的按鈕。', ['multiButton']),
+      S('把用到相機的程式往上滑掉', '看到 LINE、視訊、相機、掃碼這類的程式，就用手指把它往上滑掉。也可以點「全部關閉」。', ['cards']),
+    ];
+  const RETEST = S('回到這個網頁，按「開始檢測」', '回到這個網頁，點綠色的「開始檢測」按鈕。如果跳出問你能不能用相機，點「允許」。', ['pageBtn','開始檢測']);
+
   const CAUSES = {
     insecure:  { lv:'bad', name:'網址不安全，無法使用相機', verify:'reopen',
-      what:'瀏覽器只允許 https:// 開頭的網址使用相機。',
+      what:'這個網頁的網址不正確，所以平板不讓它用相機。',
+      steps:[ S('確認網址', '最上面那一條網址要是「https://hby0413.github.io/camera-test/」。請重新用這個網址打開。', ['url']) ] },
+    inapp:     { lv:'bad', name:'在 LINE 或其他 App 裡打開了網頁', verify:'reopen',
+      what:'您是在 LINE、Facebook 這類程式裡面打開這個網頁的，這種情況下相機常常不能用。要改用 ' + BR + ' 打開。',
       steps:[
-        S('確認網址', '網址列要顯示下面這個網址，開頭必須是 https://', ['https://hby0413.github.io/camera-test/']),
-        S('不要用檔案方式開啟', '如果是從下載的檔案打開，請改成直接在瀏覽器輸入上面的網址。'),
+        S('點右上角的「⋯」', '看畫面最上面右邊，有三個點「⋯」的按鈕，點一下。（有些是在右下角）', ['inappMenu']),
+        S('點「用 ' + BR + ' 開啟」', '在跳出來的選單裡，找到「用 ' + BR + ' 開啟」或「用預設瀏覽器開啟」，點一下。', ['inappOpen', BR]),
+        RETEST,
       ] },
-    inapp:     { lv:'bad', name:'在 App 內建瀏覽器開啟', verify:'reopen',
-      what:'LINE、Facebook、Instagram 等 App 內建的瀏覽器常常不能用相機，或很容易被中斷。',
+    unsupported: { lv:'bad', name:'請改用 ' + BR + ' 打開', verify:'reopen',
+      what:'系統只支援 Chrome 和 Safari。您現在用的是「' + BROWSER.name + '」，請照下面的步驟改用 ' + BR + '。',
       steps:[
-        S('找到右上角的選單', '在畫面右上角或右下角，找「⋯」或分享圖示，點一下。', null, { icon:'menu' }),
-        S('選擇用瀏覽器開啟', isIOS ? '選「用 Safari 開啟」或「以預設瀏覽器開啟」。' : '選「用 Chrome 開啟」或「以瀏覽器開啟」。', ['⋯', isIOS ? '用 Safari 開啟' : '用 Chrome 開啟']),
-        S('在新開的瀏覽器重新檢測', '頁面打開後，按「開始檢測」並允許使用相機。'),
+        S('按住網址不放', '按住畫面最上面那一條網址不要放開，出現選單後點「拷貝」（或「複製」）。', ['copyUrl']),
+        S('打開 ' + BR, goHome + '再點' + (isIOS ? '藍色指南針圖案的「Safari」。' : '紅黃綠圓形圖案的「Chrome」。'), ['home', BR]),
+        S('貼上網址', '點最上面的網址列，再點「貼上並前往」。', ['pasteUrl']),
+        RETEST,
       ] },
-    unsupported: { lv:'bad', name:'使用的瀏覽器不在支援範圍', verify:'reopen',
-      what:'系統只支援 Chrome 和 Safari。目前偵測到：' + BROWSER.name + '。其他瀏覽器可能無法正常使用鏡頭。',
+    nosupport: { lv:'bad', name:'這個瀏覽器不能用相機', verify:'reopen',
+      what:'目前的瀏覽器或平板系統太舊，網頁沒辦法使用相機。',
+      steps:[ S('改用 ' + BR + ' 打開', goHome + '點「' + BR + '」，再打開這個網址。', ['home', BR]), ...UPDATE ] },
+    perm:      { lv:'bad', name:'網頁沒有被允許使用相機', verify:'camera',
+      what:'平板目前不讓這個網頁使用相機。照下面的步驟打開就好。',
       steps: isIOS ? [
-        S('複製這個網址', '先把目前頁面的網址複製起來。', ['網址列','拷貝']),
-        S('打開 Safari', '回到主畫面，點藍色指南針圖示的「Safari」。', ['主畫面','Safari']),
-        S('貼上網址並開啟', '在 Safari 網址列貼上剛剛的網址，前往後按「開始檢測」。'),
+        S('點網址左邊的「aA」', '看畫面最上面，網址前面有一個「aA」的小字，點一下。', ['safariAa']),
+        S('點「網站設定」', '在跳出來的選單裡點「網站設定」。', ['safariMenu']),
+        S('把「相機」改成「允許」', '找到「相機」那一行，點一下，選「允許」。', ['safariSite']),
+        S('如果找不到：打開「設定」', '上面的方法找不到的話，' + goHome + '點「設定」。', ['home','設定']),
+        S('點左邊的「Safari」', '在左邊清單往下找到「Safari」，點一下。', iLeft('Safari')),
+        S('把「相機」改成「允許」', '在右邊往下滑，找到「相機」，點一下，選「允許」。', iSet('Safari', 'Safari', [{label:'網頁縮放'},{label:'麥克風', value:'詢問'},{label:'相機', value:'拒絕'},{label:'位置', value:'詢問'}], 2)),
+        S('回到這個網頁', '設定好後回到這個網頁，點下面的「做好了，幫我測試」。如果測試還是不行，再點網址右邊的「↻」重新整理。', ['reload']),
       ] : [
-        S('複製這個網址', '先把目前頁面的網址複製起來。', ['網址列','複製']),
-        S('打開 Chrome', '回到主畫面或應用程式列表，點「Chrome」。沒有的話到 Play 商店安裝。', ['主畫面','Chrome']),
-        S('貼上網址並開啟', '在 Chrome 網址列貼上剛剛的網址，前往後按「開始檢測」。'),
-      ] },
-    nosupport: { lv:'bad', name:'瀏覽器不支援相機', verify:'reopen',
-      what:'這個瀏覽器或系統版本太舊，無法在網頁上使用相機。',
-      steps:[
-        S('改用內建瀏覽器', isIOS ? '請改用 iPad 內建的 Safari 開啟這個網址。' : '請改用 Chrome 開啟這個網址。'),
-        S('更新系統', '把系統更新到最新版本後再試一次。', isIOS ? ['設定','一般','軟體更新'] : ['設定','系統','軟體更新']),
-      ] },
-    perm:      { lv:'bad', name:'相機權限被拒絕或關閉', verify:'camera',
-      what:'瀏覽器或系統不允許這個網頁使用相機。',
-      steps: isIOS ? [
-        S('打開網站設定', '點網址列左邊的「大小」圖示（aA），再點「網站設定」。', ['aA','網站設定','相機','允許'], { icon:'aa' }),
-        S('檢查 Safari 的相機設定', '如果上一步找不到，到系統設定裡把相機改成「允許」或「詢問」。', ['設定','Safari','相機','允許']),
-        S('檢查螢幕使用時間限制', '確認相機沒有被家長控制或公司設定關閉。', ['設定','螢幕使用時間','內容與隱私權限制','允許的 App','相機 開啟']),
-        S('重新整理這個頁面', '回到這頁，往下拉重新整理，或點網址列旁的重新整理按鈕。'),
-      ] : [
-        S('打開網站權限', '點網址列左邊的鎖頭或設定圖示，找到「權限」。', ['🔒','權限','相機','允許'], { icon:'lock' }),
-        S('檢查 Chrome 的相機權限', '如果上一步沒有相機選項，到系統設定裡打開。', ['設定','應用程式','Chrome','權限','相機','允許']),
-        S('重新整理這個頁面', '回到這頁，點網址列旁的重新整理按鈕。'),
+        S('點網址左邊的小圖示', '看畫面最上面，網址前面有一個小圖示，點一下。', ['chromeLock']),
+        S('打開「相機」', '找到「相機」，把旁邊的開關點開（變成藍色）。', ['chromePerm']),
+        S('如果找不到：打開「設定」', '上面的方法找不到的話，' + goHome + '點「設定」。', ['home','設定']),
+        S('點左邊的「應用程式」', '在清單裡找到「應用程式」，點一下，再找到「Chrome」點進去。', aLeft('應用程式')),
+        S('點「權限」→「相機」→「允許」', '在 Chrome 裡點「權限」，再點「相機」，選「使用應用程式時允許」。', aSet('應用程式', 'Chrome', [{label:'通知'},{label:'權限', value:'相機已拒絕'},{label:'電池'},{label:'儲存空間'}], 1)),
+        S('回到這個網頁', '設定好後回到這個網頁，點下面的「做好了，幫我測試」。如果測試還是不行，再點網址右邊的「↻」重新整理。', ['reload']),
       ] },
     missing:   { lv:'bad', name:'找不到相機', verify:'camera',
-      what:'系統回報沒有可用的鏡頭。可能是鏡頭硬體故障、排線鬆脫，或系統沒有偵測到。',
+      what:'平板說找不到鏡頭。可能是鏡頭壞了，或平板需要重新開機。',
       steps:[
-        S('用內建相機 App 測試', '打開內建「相機」App，切換前後鏡頭，看看能不能正常顯示畫面。', ['相機 App','切換前 / 後鏡頭']),
-        S('完全關機再開機', isIOS ? '同時按住電源鍵和音量鍵，滑動關機，等 30 秒再開機。' : '長按電源鍵選「關機」，等 30 秒再開機。'),
-        S('更新系統', '把系統更新到最新版本。', isIOS ? ['設定','一般','軟體更新'] : ['設定','系統','軟體更新']),
+        S('打開平板內建的「相機」', goHome + '點「相機」，看看有沒有畫面。', ['home','相機']),
+        S('切換前後鏡頭試試', '在相機畫面點有兩個箭頭的「換鏡頭」按鈕，看兩個鏡頭是不是都有畫面。', ['cameraApp']),
+        ...RESTART,
       ],
-      fail:'如果內建相機 App 也打不開，代表鏡頭硬體有問題，建議送修。' },
-    busy:      { lv:'bad', name:'相機被其他 App 占用', verify:'camera',
-      what:'鏡頭正被其他 App 或分頁使用，系統一次只讓一個 App 用相機。',
-      steps:[
-        S('打開多工畫面', isIOS ? '從螢幕最底部往上滑，滑到一半停住，就會看到所有開著的 App。' : '點螢幕下方的「最近使用」按鈕（方塊或三條線圖示）。', null, { icon:'multitask' }),
-        S('關掉會用到相機的 App', '把視訊通話、LINE、相機、掃碼、會議類的 App 往上滑掉，完全關閉。'),
-        S('關掉其他瀏覽器分頁', '如果瀏覽器還開著其他也用鏡頭的網頁，把那些分頁關掉。'),
-      ],
+      fail:'如果平板內建的「相機」也打不開，代表鏡頭可能壞了，建議送修。' },
+    busy:      { lv:'bad', name:'相機正在被別的程式使用', verify:'camera',
+      what:'平板一次只能讓一個程式用相機。現在有別的程式（例如 LINE 視訊、相機、掃碼）正在用，要先把它關掉。',
+      steps:[ ...CLOSE_APPS ],
       next:['hardware'] },
-    hardware:  { lv:'bad', name:'疑似鏡頭硬體故障', verify:'camera',
-      what:'已經排除占用相機的可能，但鏡頭超過 1 分鐘都打不開。這通常是硬體或系統層的問題。',
+    hardware:  { lv:'bad', name:'鏡頭可能故障了', verify:'camera',
+      what:'已經試了 1 分鐘以上都打不開鏡頭，可能是鏡頭本身有問題。先試試重新開機。',
       steps:[
-        S('用內建相機 App 測試', '打開內建「相機」App，切換前後鏡頭。如果也打不開或黑畫面，就是硬體問題。', ['相機 App','切換前 / 後鏡頭']),
-        S('完全關機再開機', '關機後等 30 秒再開機，讓相機模組重新啟動。'),
-        S('更新系統', '把系統更新到最新版本。', isIOS ? ['設定','一般','軟體更新'] : ['設定','系統','軟體更新']),
+        S('打開平板內建的「相機」', goHome + '點「相機」，看看有沒有畫面。', ['home','相機']),
+        S('切換前後鏡頭試試', '點「換鏡頭」按鈕，看兩個鏡頭是不是都有畫面。', ['cameraApp']),
+        ...RESTART,
       ],
-      fail:'試過以上步驟還是不行，建議送修檢查鏡頭模組。' },
+      fail:'重新開機後還是不行，而且平板內建的「相機」也有問題，建議送修檢查鏡頭。' },
     black:     { lv:'bad', name:'畫面全黑', verify:'camera',
-      what:'鏡頭有在運作，但拍到的畫面幾乎全黑。',
+      what:'鏡頭有開，但拍到的畫面全黑。最常見的原因是鏡頭被東西擋住了。',
       steps:[
-        S('檢查鏡頭有沒有被遮住', '看看保護殼、貼紙、手指或隱私遮罩有沒有蓋到鏡頭。拿開後看下面的亮度條會不會上升。', null, { live:'luma' }),
-        S('移到光線充足的地方', '開燈或靠近窗戶，亮度條應該要明顯上升。', null, { live:'luma' }),
-        S('切換前 / 後鏡頭', '用上方影片下面的選單切換鏡頭，比較兩個鏡頭的畫面。'),
+        S('看看鏡頭有沒有被擋住', '鏡頭在平板正面最上面中間的小黑點。保護殼、貼紙、手指都不要擋到。拿開後，下面的亮度數字會變大。', ['lens'], { live:'luma' }),
+        S('移到亮一點的地方', '開燈或靠近窗戶。下面的亮度數字超過 30 就正常了。', ['light'], { live:'luma' }),
+        S('換另一個鏡頭試試', '點網頁上的「前鏡頭」選單，改成「後鏡頭」，看看畫面有沒有出來。', ['pageBtn','前鏡頭']),
       ],
-      next:['hardware'], fail:'光線充足、沒有遮擋卻還是全黑，可能是鏡頭硬體故障。' },
-    stuck:     { lv:'bad', name:'畫面完全靜止', verify:'camera',
-      what:'畫面一直在送出，但內容完全沒有變化，像是卡住的照片。可能是感光元件沒有回應。',
+      next:['hardware'], fail:'光線夠亮、也沒有東西擋住，畫面還是全黑，可能是鏡頭壞了，建議送修。' },
+    stuck:     { lv:'bad', name:'畫面卡住不動', verify:'camera',
+      what:'鏡頭有畫面，但畫面完全不會動，像一張照片。',
       steps:[
-        S('在鏡頭前揮手', '對著鏡頭揮揮手，看下面的變化條有沒有跳動。', null, { live:'move' }),
-        S('重新開啟鏡頭', '按下一步後，會自動關閉再重新開啟鏡頭。', null, { action:'restart' }),
-        S('重新開機', '如果還是卡住，關機 30 秒再開機。'),
+        S('對著鏡頭揮揮手', '把手放在平板前面左右揮動，看下面的數字有沒有跳動。', ['wave'], { live:'move' }),
+        S('重新開啟鏡頭', '點下面的「做好了，下一步」，網頁會自動把鏡頭關掉再打開。', ['autoRestart'], { action:'restart' }),
+        ...RESTART,
       ],
       next:['hardware'] },
-    sleep:     { lv:'bad', name:'平板休眠或切換到其他 App', verify:'confirm',
-      what:'頁面被切到背景或螢幕關閉，系統會強制關閉鏡頭。這是平板鏡頭中斷最常見的原因。',
+    sleep:     { lv:'bad', name:'平板螢幕關掉了，或跑去用別的程式', verify:'confirm',
+      what:'平板螢幕自動關掉、或切到別的程式時，平板會自動把相機關掉。這是最常見的原因。把「自動關螢幕」關掉就好。',
       steps: isIOS ? [
-        S('關閉自動鎖定', '讓螢幕不會自己關掉。', ['設定','螢幕顯示與亮度','自動鎖定','永不']),
-        S('保持畫面在最前面', '使用時不要切到其他 App，也不要按電源鍵關螢幕。'),
-        S('檢查引導使用模式', '如果有開「引導使用模式」，確認沒有設定時間限制。', ['設定','輔助使用','引導使用模式']),
+        Object.assign({}, openSettings),
+        S('點左邊的「螢幕顯示與亮度」', '在左邊清單裡找到「螢幕顯示與亮度」，點一下。', iLeft('螢幕顯示與亮度')),
+        S('點右邊的「自動鎖定」', '在右邊找到「自動鎖定」，點一下。', iSet('螢幕顯示與亮度', '螢幕顯示與亮度', [{label:'亮度'},{label:'原彩顯示', type:'toggle', on:true},{label:'自動鎖定', value:'2 分鐘'},{label:'文字大小'}], 2)),
+        S('選「永不」', '在最下面點「永不」，旁邊出現打勾就完成了。', iSet('螢幕顯示與亮度', '自動鎖定', [{label:'2 分鐘'},{label:'5 分鐘'},{label:'10 分鐘'},{label:'永不', type:'check', on:true}], 3)),
+        S('使用時不要切到別的程式', '用的時候讓這個畫面一直開著，不要按側邊按鈕關螢幕，也不要去開別的程式。', ['keepOpen']),
       ] : [
-        S('延長螢幕逾時', '讓螢幕不會自己關掉。', ['設定','顯示','螢幕逾時','最長']),
-        S('保持畫面在最前面', '使用時不要切到其他 App，也不要按電源鍵關螢幕。'),
-        S('取消瀏覽器的電池限制', '避免系統在背景限制瀏覽器。', ['設定','應用程式','Chrome','電池','不受限制']),
+        Object.assign({}, openSettings),
+        S('點左邊的「顯示」', '在清單裡找到「顯示」，點一下。', aLeft('顯示')),
+        S('點「螢幕逾時」', '找到「螢幕逾時」，點一下。', aSet('顯示', '顯示', [{label:'亮度'},{label:'深色模式', type:'toggle'},{label:'螢幕逾時', value:'1 分鐘'},{label:'字型大小'}], 2)),
+        S('選最長的時間', '選清單裡最長的時間（例如 10 分鐘或 30 分鐘）。', aSet('顯示', '螢幕逾時', [{label:'1 分鐘'},{label:'5 分鐘'},{label:'10 分鐘'},{label:'30 分鐘', type:'check', on:true}], 3)),
+        S('使用時不要切到別的程式', '用的時候讓這個畫面一直開著，不要按電源鍵關螢幕，也不要去開別的程式。', ['keepOpen']),
       ],
       next:['freeze'] },
-    freeze:    { lv:'bad', name:'系統為了省電把頁面凍結', verify:'confirm',
-      what:'頁面停止運作好幾秒，代表系統暫停了這個頁面，鏡頭也跟著停。',
+    freeze:    { lv:'bad', name:'平板為了省電把網頁暫停了', verify:'confirm',
+      what:'平板在省電時會把網頁暫停，鏡頭也會跟著停。接上充電器、關掉省電模式就好。',
       steps: isIOS ? [
-        S('接上電源', '長時間使用時請接上充電器。'),
-        S('關閉低耗電模式', '低耗電模式會讓系統更積極地暫停網頁。', ['設定','電池','低耗電模式 關閉']),
-        S('關閉自動鎖定', '避免螢幕關閉。', ['設定','螢幕顯示與亮度','自動鎖定','永不']),
+        S('接上充電器', '長時間使用時，請用平板的充電線接上插座。', ['charger']),
+        Object.assign({}, openSettings),
+        S('點左邊的「電池」', '在左邊清單裡找到「電池」，點一下。', iLeft('電池')),
+        S('關掉「低耗電模式」', '右邊的「低耗電模式」開關如果是綠色，就點一下讓它變成灰色。', iSet('電池', '電池', [{label:'電池百分比', type:'toggle', on:true},{label:'低耗電模式', type:'toggle', on:true},{label:'電池健康度'}], 1, '點一下關掉')),
       ] : [
-        S('接上電源', '長時間使用時請接上充電器。'),
-        S('關閉省電模式', '省電模式會讓系統更積極地暫停網頁。', ['設定','電池','省電模式 關閉']),
-        S('取消瀏覽器的電池限制', '', ['設定','應用程式','Chrome','電池','不受限制']),
+        S('接上充電器', '長時間使用時，請用平板的充電線接上插座。', ['charger']),
+        Object.assign({}, openSettings),
+        S('點左邊的「電池」', '在清單裡找到「電池」，點一下。', aLeft('電池')),
+        S('關掉「省電模式」', '「省電模式」的開關如果是開的，就點一下關掉。', aSet('電池', '電池', [{label:'省電模式', type:'toggle', on:true},{label:'背景使用限制'},{label:'更多電池設定'}], 0, '點一下關掉')),
       ] },
-    overlay:   { lv:'warn', name:'通知、控制中心或來電打斷', verify:'confirm',
-      what:'有東西蓋在畫面上（通知、控制中心、來電、分割畫面），系統暫停了鏡頭。',
+    overlay:   { lv:'warn', name:'被通知、來電或其他畫面打斷', verify:'confirm',
+      what:'有通知、來電，或拉下了選單，蓋住了這個網頁，鏡頭就會暫停。打開「勿擾模式」可以避免。',
       steps:[
-        S('開啟勿擾模式', '避免通知和來電打斷。', isIOS ? ['控制中心','專注模式','勿擾模式'] : ['快速設定','勿擾模式']),
-        S('不要使用分割畫面', '讓這個頁面全螢幕顯示，不要和其他 App 並排或使用子母畫面。'),
-        S('使用時不要拉下選單', '避免拉下控制中心或通知中心。'),
+        S('從右上角往下滑', isIOS ? '用一根手指，從螢幕「右上角」往下滑，會打開「控制中心」。' : '用一根手指，從螢幕最上面往下滑兩次，會打開快速設定。', ['ccOpen']),
+        S('點月亮圖案，打開勿擾', isIOS ? '點有月亮圖案的「專注模式」，再點「勿擾模式」。' : '點有月亮圖案的「勿擾」，讓它變亮。', ['ccDnd', isIOS]),
+        S('只開這個網頁', '不要讓兩個畫面並排，也不要開小視窗，讓這個網頁佔滿整個螢幕。', ['split']),
       ],
       next:['sleep'] },
-    heat:      { lv:'bad', name:'過熱或效能不足', verify:'camera',
-      what:'畫面更新速度明顯變慢或卡住，通常是平板過熱降速，或同時開太多 App。',
+    heat:      { lv:'bad', name:'平板太燙或太忙', verify:'camera',
+      what:'平板太燙或同時開了太多程式時，會變慢甚至讓鏡頭卡住。先讓它休息一下。',
       steps:[
-        S('讓平板降溫', '拿掉保護殼、遠離陽光或熱源，暫停充電幾分鐘。'),
-        S('關掉背景 App', isIOS ? '從螢幕底部往上滑停住，把其他 App 都滑掉。' : '打開最近使用畫面，點「全部關閉」。', null, { icon:'multitask' }),
-        S('重新開機', '如果還是很慢，重新開機釋放記憶體。'),
+        S('讓平板降溫', '拿掉保護殼，先拔掉充電線，放在通風、沒有太陽照到的地方 5 分鐘。', ['heat']),
+        ...CLOSE_APPS,
       ] },
-    lowfps:    { lv:'warn', name:'畫面變慢（過熱前兆）', verify:'camera',
-      what:'畫面更新速度掉到平常的一半以下，再繼續可能會卡住或中斷。',
+    lowfps:    { lv:'warn', name:'畫面變慢了（平板可能太燙）', verify:'camera',
+      what:'畫面更新變得很慢，平板可能太燙了。現在處理，可以避免等一下鏡頭斷掉。',
       steps:[
-        S('摸摸看平板背面', '如果明顯發燙，代表過熱正在降速。'),
-        S('讓平板降溫', '拿掉保護殼、暫停充電，放在通風的地方。'),
-        S('關掉背景 App', '把其他沒在用的 App 都關掉。', null, { icon:'multitask' }),
+        S('讓平板降溫', '摸摸看平板背面，如果很燙：拿掉保護殼、先拔掉充電線，放在通風的地方。', ['heat']),
+        ...CLOSE_APPS,
       ],
       next:['heat'] },
-    device:    { lv:'warn', name:'相機裝置變動', verify:'camera',
-      what:'有外接鏡頭、擴充座或藍牙設備連接或斷開，鏡頭因此被重新分配。',
+    device:    { lv:'warn', name:'外接設備鬆掉或變動', verify:'camera',
+      what:'平板接的外接鏡頭、底座或藍牙設備有變動，鏡頭因此被中斷。',
       steps:[
-        S('檢查外接設備', '確認外接鏡頭、擴充座的接頭有插好、沒有鬆動。'),
-        S('拔掉外接設備測試', '暫時拔掉擴充座或外接鏡頭，只用平板內建鏡頭測試。'),
-        S('關閉不需要的藍牙設備', '', isIOS ? ['設定','藍牙'] : ['設定','連線','藍牙']),
+        S('檢查外接設備', '如果平板有接外接鏡頭或底座，看看接頭有沒有插好。也可以先拔掉，只用平板自己的鏡頭試試。', ['cable']),
       ] },
-    constraint:{ lv:'warn', name:'鏡頭不支援指定的畫質', verify:'camera',
-      what:'鏡頭不支援預設的解析度，已自動改用鏡頭預設畫質。',
-      steps:[ S('切換前 / 後鏡頭', '通常不需要處理。如果仍然開不了，試著切換鏡頭。') ] },
-    system:    { lv:'bad', name:'系統主動關閉鏡頭（原因不明）', verify:'camera',
-      what:'鏡頭被系統關閉，但瀏覽器沒有看到任何前兆。',
-      steps:[
-        S('更新系統和瀏覽器', '', isIOS ? ['設定','一般','軟體更新'] : ['設定','系統','軟體更新']),
-        S('重新開機', '關機 30 秒再開機。'),
-        S('記下發生的時間', '觀察是否有固定規律，例如固定時間、充電時、使用多久之後。'),
-      ],
+    constraint:{ lv:'warn', name:'鏡頭畫質已自動調整', verify:'camera',
+      what:'鏡頭不支援預設的畫質，網頁已經自動改用適合的畫質，通常不需要處理。',
+      steps:[ S('換另一個鏡頭試試', '如果鏡頭還是打不開，點「前鏡頭」選單改成「後鏡頭」。', ['pageBtn','前鏡頭']) ] },
+    system:    { lv:'bad', name:'鏡頭被平板關掉了（原因不明）', verify:'camera',
+      what:'平板把鏡頭關掉了，但沒有看到明顯的原因。先重新開機，並把系統更新到最新版本。',
+      steps:[ ...RESTART, ...UPDATE, S('記下斷掉的時間', '如果還是會斷，記下大概幾點斷掉，連同檢測報告一起傳給客服。', ['note']) ],
       next:['busy','sleep','heat'] },
   };
-  const stepText = s => s.t + (s.path ? '：' + s.path.join(' → ') : '');
+  const stepText = s => s.t;
 
   // ===== 狀態 =====
   let stream = null, track = null, running = false, wakeLock = null;
@@ -812,35 +1059,6 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
   const btn = (txt, cls, fn) => { const b = el('button', cls, txt); b.type = 'button'; b.onclick = fn; return b; };
 
-  const ICONS = {
-    multitask: `<svg viewBox="0 0 220 150" width="220" aria-hidden="true">
-      <rect x="40" y="8" width="140" height="134" rx="14" fill="none" stroke="currentColor" stroke-width="3"/>
-      <rect x="58" y="34" width="44" height="62" rx="6" fill="currentColor" opacity=".18"/>
-      <rect x="118" y="34" width="44" height="62" rx="6" fill="currentColor" opacity=".18"/>
-      <path d="M80 30 v-14 M74 22 l6-7 6 7" stroke="var(--bad)" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <rect x="92" y="128" width="36" height="4" rx="2" fill="currentColor"/>
-      <path d="M110 122 v-22 M103 108 l7-8 7 8" stroke="var(--accent)" stroke-width="4" fill="none" stroke-linecap="round"/>
-    </svg>`,
-    aa: `<svg viewBox="0 0 300 60" width="300" aria-hidden="true">
-      <rect x="4" y="10" width="292" height="40" rx="12" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
-      <circle cx="30" cy="30" r="17" fill="var(--accent)"/>
-      <text x="30" y="36" text-anchor="middle" font-size="17" font-weight="700" fill="#fff">aA</text>
-      <text x="60" y="36" font-size="15" fill="currentColor">hby0413.github.io</text>
-    </svg>`,
-    lock: `<svg viewBox="0 0 300 60" width="300" aria-hidden="true">
-      <rect x="4" y="10" width="292" height="40" rx="20" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
-      <circle cx="30" cy="30" r="17" fill="var(--accent)"/>
-      <rect x="23" y="29" width="14" height="10" rx="2" fill="#fff"/><path d="M26 29 v-4 a4 4 0 0 1 8 0 v4" stroke="#fff" stroke-width="2.5" fill="none"/>
-      <text x="60" y="36" font-size="15" fill="currentColor">hby0413.github.io</text>
-    </svg>`,
-    menu: `<svg viewBox="0 0 300 70" width="300" aria-hidden="true">
-      <rect x="4" y="8" width="292" height="54" rx="10" fill="var(--panel)" stroke="var(--line)" stroke-width="2"/>
-      <text x="20" y="41" font-size="15" fill="currentColor">鏡頭穩定度檢測</text>
-      <circle cx="268" cy="35" r="18" fill="var(--accent)"/>
-      <circle cx="259" cy="35" r="2.6" fill="#fff"/><circle cx="268" cy="35" r="2.6" fill="#fff"/><circle cx="277" cy="35" r="2.6" fill="#fff"/>
-    </svg>`,
-  };
-
   function openGuide(key){
     if (!key || !CAUSES[key]) return;
     G.key = key; G.i = 0; G.mode = 'step';
@@ -869,7 +1087,7 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
       const ill = illustration(s);
       if (ill){ ill.style.marginTop = '12px'; body.append(ill); }
       if (G.i > 0) act.append(btn('上一步', 'grow', () => { G.i--; renderGuide(); }));
-      else act.append(btn('這不是我的問題', 'grow', () => { closeGuide(); }));
+      else act.append(btn('先不要', 'grow', () => { closeGuide(); }));
       const last = G.i === c.steps.length - 1;
       act.append(btn(last ? '做好了，幫我測試' : '做好了，下一步', 'primary', async () => {
         if (s.action === 'restart'){ log('引導：重新開啟鏡頭'); if (running) await start(); else $('startBtn').click(); }
@@ -881,28 +1099,16 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   }
 
   function illustration(s){
+    const wrap = el('div', 'g-ill-wrap');
+    if (s.pic){ const box = el('div', 'g-ill'); box.innerHTML = PIC(s.pic); wrap.append(box); }
     if (s.live){
-      const box = el('div', 'g-ill'); const w = el('div', 'g-live'); w.id = 'gLive'; w.dataset.kind = s.live;
+      const w = el('div', 'g-live'); w.id = 'gLive'; w.dataset.kind = s.live;
       const big = el('div', 'big', '–'); const bar = el('div', 'bar'); bar.append(el('i'));
       const hint = el('div', 'hint', running ? '偵測中…' : '正在開啟鏡頭…');
-      w.append(el('div', 'g-num', s.live === 'luma' ? '畫面亮度' : '畫面變化'), big, bar, hint);
-      box.append(w); return box;
+      w.append(el('div', 'g-num', s.live === 'luma' ? '畫面亮度（超過 30 就正常）' : '畫面變化'), big, bar, hint);
+      wrap.append(w);
     }
-    if (s.icon || s.path){
-      const box = el('div', 'g-ill');
-      if (s.icon){ const d = el('div'); d.innerHTML = ICONS[s.icon]; box.append(d); }
-      if (s.path){
-        const cr = el('div', 'crumbs');
-        s.path.forEach((p, k) => {
-          if (k) cr.append(el('em', '', '›'));
-          cr.append(el('span', k === s.path.length - 1 ? 'last' : '', p));
-        });
-        if (s.icon) cr.style.marginTop = '10px';
-        box.append(cr);
-      }
-      return box;
-    }
-    return null;
+    return wrap.children.length ? wrap : null;
   }
 
   function ensureCamera(){ if (!running) $('startBtn').click(); }
