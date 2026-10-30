@@ -41,7 +41,13 @@ h2{font-size:.8rem;letter-spacing:.06em;color:var(--muted);margin:0 0 10px;font-
 .problem.ok .title{color:var(--ok)} .problem.warn .title{color:var(--warn)} .problem.bad .title{color:var(--bad)}
 .pill{font-size:.75rem;padding:2px 8px;border-radius:999px;background:var(--panel);color:var(--muted);border:1px solid var(--line)}
 .problem .what{margin:6px 0 0;font-size:.92rem}
-.problem .why{margin:4px 0 0;font-size:.82rem;color:var(--muted)}
+.problem .why{margin:10px 0 0;font-size:.88rem;background:var(--panel);border-radius:8px;padding:8px 12px}
+.problem .why b{display:block;font-size:.8rem;color:var(--muted);margin-bottom:4px}
+.problem .why ul{margin:0;padding-left:1.2em;font-family:var(--mono);font-size:.82rem}
+.problem .why li{margin:2px 0}
+.pill.confirmed{background:var(--ok);color:#fff;border-color:transparent}
+.pill.guess{background:var(--warn);color:#fff;border-color:transparent}
+.pill.unknown{background:var(--muted);color:#fff;border-color:transparent}
 .problem ol{margin:10px 0 0;padding-left:1.4em;font-size:.92rem}
 .problem ol li{margin:4px 0}
 .problem .steps-h{margin:12px 0 0;font-weight:600;font-size:.88rem}
@@ -137,8 +143,8 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   <section class="problem" id="problem" aria-live="polite">
     <div class="head"><span class="title" id="pTitle">尚未開始檢測</span><span class="pill" id="pConf" hidden></span></div>
     <p class="what" id="pWhat">先看下面的「環境檢查」，全部沒問題後按「開始檢測」。</p>
-    <p class="why" id="pWhy" hidden></p>
-    <p class="steps-h" id="pStepsH" hidden>可以嘗試的辦法</p>
+    <div class="why" id="pWhy" hidden></div>
+    <p class="steps-h" id="pStepsH" hidden>可以試試的方法</p>
     <ol id="pSteps" hidden></ol>
     <div class="pactions"><button class="primary" id="guideBtn" hidden>一步一步帶我解決</button></div>
   </section>
@@ -167,9 +173,8 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
       <div class="controls">
         <button class="primary" id="startBtn">開始檢測</button>
         <button id="stopBtn" disabled>停止</button>
-        <select id="camSel" aria-label="選擇鏡頭">
-          <option value="user">前鏡頭</option>
-          <option value="environment">後鏡頭</option>
+        <select id="camSel" aria-label="選擇鏡頭" disabled>
+          <option value="">開始後顯示鏡頭</option>
         </select>
         <label class="chk"><input type="checkbox" id="autoRe" checked> 斷線自動重連</label>
       </div>
@@ -394,7 +399,7 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
         + box(26, 50, 88, 130, 12) + box(128, 50, 88, 130, 12) + arrow(70, 160, 70, 64, '#fff') + arrow(172, 160, 172, 64, '#fff')
         + T(SW/2, SH-20, '把用到相機的程式往上滑掉', {s:13, c:'#ffd27a', w:700, a:'middle'})),
       pageBtn: (which) => {
-        const L = ['開始檢測','停止','前鏡頭 ▾'], X = [16, 104, 168];
+        const L = ['開始檢測','停止','切換鏡頭 ▾'], X = [16, 104, 168];
         let s = R(0,0,SW,SH,{f:'#f3f5f4'}) + R(16, 14, SW-32, 150, {r:8, f:'#000'}) + T(30, 34, '● 運作中', {s:11, c:'#fff', w:700});
         L.forEach((l, i) => { const w = i ? 56 : 80; s += R(X[i], 176, i===2?90:w, 30, {r:8, f: i ? '#fff' : '#1f7a5c', s:'#d9e0dc'}) + T(X[i] + (i===2?45:w/2), 196, l, {s:11, c: i ? INK : '#fff', w:600, a:'middle'}); });
         const i = L.findIndex(l => l.startsWith(which)), w = i===2 ? 90 : i ? 56 : 80;
@@ -403,6 +408,12 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
       autoRestart: () => device(R(0,0,SW,SH,{f:'#f3f5f4'}) + R(16, 14, SW-32, 150, {r:8, f:'#000'})
         + `<circle cx="${SW/2}" cy="80" r="22" fill="none" stroke="#555" stroke-width="5"/><path d="M${SW/2} 58 a22 22 0 0 1 22 22" stroke="${GREEN}" stroke-width="5" fill="none"/>`
         + T(SW/2, 130, '網頁會自動重新開啟鏡頭', {s:13, c:'#fff', w:700, a:'middle'}) + T(SW/2, 198, '您只要按下面的「做好了」就好', {s:14, w:800, a:'middle'})),
+      tabs: () => device(bar() + `<rect x="0" y="35" width="${SW}" height="${SH-35}" fill="#3a3a3c"/>`
+        + [0,1,2,3,4,5].map(i => { const x = 16 + (i%3)*106, y = 46 + Math.floor(i/3)*92;
+            return R(x, y, 96, 82, {r:8, f: i === 0 ? '#fff' : '#d1d1d6', s: i === 0 ? GREEN : 'none', sw:3})
+              + (i ? `<circle cx="${x+84}" cy="${y+12}" r="9" fill="#636366"/>` + T(x+84, y+16, '✕', {s:11, c:'#fff', w:700, a:'middle'}) : T(x+48, y+46, '這個留著', {s:11, c:GREEN, w:700, a:'middle'}));
+          }).join('')
+        + box(194, 49, 18, 18, 9) + tap(206, 58, '點 ✕ 關掉', 'below', 14)),
       keepOpen: () => device(R(0,0,SW,SH,{f:'#f3f5f4'}) + R(16, 14, SW-32, 120, {r:8, f:'#000'}) + T(30, 34, '● 運作中', {s:11, c:'#fff', w:700})
         + `<circle cx="70" cy="178" r="22" fill="${GREEN}"/><path d="M59 178 l8 8 l15 -16" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/>`
         + T(100, 176, '讓這個畫面一直開著', {s:14, w:800}) + T(100, 196, '不要關螢幕、不要切到別的程式', {s:12, c:'#c0392b', w:700}), {alt:'保持畫面開著'}),
@@ -506,30 +517,40 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
     ];
   const RETEST = S('回到這個網頁，按「開始檢測」', '回到這個網頁，點綠色的「開始檢測」按鈕。如果跳出問你能不能用相機，點「允許」。', ['pageBtn','開始檢測']);
 
+  const MEM = navigator.deviceMemory || 0;      // 只有 Android Chrome 會提供（約略值，最高 8）
   const CAUSES = {
-    insecure:  { lv:'bad', name:'網址不安全，無法使用相機', verify:'reopen',
-      what:'這個網頁的網址不正確，所以平板不讓它用相機。',
+    memory:     { lv:'bad', basis:'guess', name:'網頁沒有正常關閉，就被重新開啟了', verify:'camera',
+      what:'網頁量到的是：檢測進行到一半時，網頁沒有被正常關閉就重新載入。最常見的原因是平板記憶體不夠，系統把網頁關掉，但網頁讀不到平板剩下多少記憶體，所以這是推測。',
+      steps:[
+        ...CLOSE_APPS,
+        S('關掉其他網頁分頁', isIOS ? '在 Safari 右下角（或右上角）點「兩個方塊」的按鈕，把用不到的網頁按「✕」關掉，只留這一個。'
+                                   : '在 Chrome 網址右邊點「有數字的方塊」，把用不到的網頁按「✕」關掉，只留這一個。', ['tabs']),
+        ...RESTART,
+      ],
+      next:['heat'] },
+    insecure:   { lv:'bad', basis:'confirmed', name:'網址不是 https，平板不讓網頁用相機', verify:'reopen',
+      what:'瀏覽器規定只有 https:// 開頭的網址才能用相機。',
       steps:[ S('確認網址', '最上面那一條網址要是「https://hby0413.github.io/camera-test/」。請重新用這個網址打開。', ['url']) ] },
-    inapp:     { lv:'bad', name:'在 LINE 或其他 App 裡打開了網頁', verify:'reopen',
-      what:'您是在 LINE、Facebook 這類程式裡面打開這個網頁的，這種情況下相機常常不能用。要改用 ' + BR + ' 打開。',
+    inapp:      { lv:'bad', basis:'confirmed', name:'網頁是在 LINE 或其他 App 裡打開的', verify:'reopen',
+      what:'依據瀏覽器回報的識別資料，目前是在「' + BROWSER.name + '」裡。這種內建瀏覽器常常不能用相機。系統只支援 ' + BR + '。',
       steps:[
         S('點右上角的「⋯」', '看畫面最上面右邊，有三個點「⋯」的按鈕，點一下。（有些是在右下角）', ['inappMenu']),
         S('點「用 ' + BR + ' 開啟」', '在跳出來的選單裡，找到「用 ' + BR + ' 開啟」或「用預設瀏覽器開啟」，點一下。', ['inappOpen', BR]),
         RETEST,
       ] },
-    unsupported: { lv:'bad', name:'請改用 ' + BR + ' 打開', verify:'reopen',
-      what:'系統只支援 Chrome 和 Safari。您現在用的是「' + BROWSER.name + '」，請照下面的步驟改用 ' + BR + '。',
+    unsupported: { lv:'bad', basis:'confirmed', name:'目前的瀏覽器不在支援範圍', verify:'reopen',
+      what:'依據瀏覽器回報的識別資料，目前用的是「' + BROWSER.name + '」。系統只支援 Chrome 和 Safari。',
       steps:[
         S('按住網址不放', '按住畫面最上面那一條網址不要放開，出現選單後點「拷貝」（或「複製」）。', ['copyUrl']),
         S('打開 ' + BR, goHome + '再點' + (isIOS ? '藍色指南針圖案的「Safari」。' : '紅黃綠圓形圖案的「Chrome」。'), ['home', BR]),
         S('貼上網址', '點最上面的網址列，再點「貼上並前往」。', ['pasteUrl']),
         RETEST,
       ] },
-    nosupport: { lv:'bad', name:'這個瀏覽器不能用相機', verify:'reopen',
-      what:'目前的瀏覽器或平板系統太舊，網頁沒辦法使用相機。',
+    nosupport:  { lv:'bad', basis:'confirmed', name:'這個瀏覽器沒有提供相機功能', verify:'reopen',
+      what:'瀏覽器沒有提供網頁使用相機的功能，可能是版本太舊。',
       steps:[ S('改用 ' + BR + ' 打開', goHome + '點「' + BR + '」，再打開這個網址。', ['home', BR]), ...UPDATE ] },
-    perm:      { lv:'bad', name:'網頁沒有被允許使用相機', verify:'camera',
-      what:'平板目前不讓這個網頁使用相機。照下面的步驟打開就好。',
+    perm:       { lv:'bad', basis:'confirmed', name:'網頁沒有被允許使用相機', verify:'camera',
+      what:'系統直接回報：不允許這個網頁使用相機。',
       steps: isIOS ? [
         S('點網址左邊的「aA」', '看畫面最上面，網址前面有一個「aA」的小字，點一下。', ['safariAa']),
         S('點「網站設定」', '在跳出來的選單裡點「網站設定」。', ['safariMenu']),
@@ -546,44 +567,44 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
         S('點「權限」→「相機」→「允許」', '在 Chrome 裡點「權限」，再點「相機」，選「使用應用程式時允許」。', aSet('應用程式', 'Chrome', [{label:'通知'},{label:'權限', value:'相機已拒絕'},{label:'電池'},{label:'儲存空間'}], 1)),
         S('回到這個網頁', '設定好後回到這個網頁，點下面的「做好了，幫我測試」。如果測試還是不行，再點網址右邊的「↻」重新整理。', ['reload']),
       ] },
-    missing:   { lv:'bad', name:'找不到相機', verify:'camera',
-      what:'平板說找不到鏡頭。可能是鏡頭壞了，或平板需要重新開機。',
+    missing:    { lv:'bad', basis:'unknown', name:'系統回報：找不到鏡頭', verify:'camera',
+      what:'系統說目前沒有可以用的鏡頭，但沒有說原因。可能是鏡頭故障或系統問題，網頁無法分辨。',
       steps:[
         S('打開平板內建的「相機」', goHome + '點「相機」，看看有沒有畫面。', ['home','相機']),
         S('切換前後鏡頭試試', '在相機畫面點有兩個箭頭的「換鏡頭」按鈕，看兩個鏡頭是不是都有畫面。', ['cameraApp']),
         ...RESTART,
       ],
       fail:'如果平板內建的「相機」也打不開，代表鏡頭可能壞了，建議送修。' },
-    busy:      { lv:'bad', name:'相機正在被別的程式使用', verify:'camera',
-      what:'平板一次只能讓一個程式用相機。現在有別的程式（例如 LINE 視訊、相機、掃碼）正在用，要先把它關掉。',
+    busy:       { lv:'bad', basis:'guess', name:'鏡頭無法啟動（系統回報：相機無法讀取）', verify:'camera',
+      what:'最常見的原因是有別的程式（例如 LINE 視訊、相機）正在用相機，但網頁看不到其他程式，所以這是推測；也可能是鏡頭硬體有問題。',
       steps:[ ...CLOSE_APPS ],
       next:['hardware'] },
-    hardware:  { lv:'bad', name:'鏡頭可能故障了', verify:'camera',
-      what:'已經試了 1 分鐘以上都打不開鏡頭，可能是鏡頭本身有問題。先試試重新開機。',
+    hardware:   { lv:'bad', basis:'unknown', name:'鏡頭連續 1 分鐘以上都無法啟動', verify:'camera',
+      what:'可能是鏡頭硬體或系統出問題，也可能是別的程式一直占著相機。網頁無法分辨是哪一種。',
       steps:[
         S('打開平板內建的「相機」', goHome + '點「相機」，看看有沒有畫面。', ['home','相機']),
         S('切換前後鏡頭試試', '點「換鏡頭」按鈕，看兩個鏡頭是不是都有畫面。', ['cameraApp']),
         ...RESTART,
       ],
       fail:'重新開機後還是不行，而且平板內建的「相機」也有問題，建議送修檢查鏡頭。' },
-    black:     { lv:'bad', name:'畫面全黑', verify:'camera',
-      what:'鏡頭有開，但拍到的畫面全黑。最常見的原因是鏡頭被東西擋住了。',
+    black:      { lv:'bad', basis:'unknown', name:'畫面全黑', verify:'camera',
+      what:'網頁量到的畫面亮度接近 0。可能是鏡頭被擋住、環境太暗，或鏡頭故障。網頁只量得到亮度，無法分辨是哪一種。',
       steps:[
         S('看看鏡頭有沒有被擋住', '鏡頭在平板正面最上面中間的小黑點。保護殼、貼紙、手指都不要擋到。拿開後，下面的亮度數字會變大。', ['lens'], { live:'luma' }),
         S('移到亮一點的地方', '開燈或靠近窗戶。下面的亮度數字超過 30 就正常了。', ['light'], { live:'luma' }),
-        S('換另一個鏡頭試試', '點網頁上的「前鏡頭」選單，改成「後鏡頭」，看看畫面有沒有出來。', ['pageBtn','前鏡頭']),
+        S('換另一個鏡頭試試', '點網頁影片下面的鏡頭選單，換成另一個鏡頭，看看畫面有沒有出來。（如果選單寫「只有一個鏡頭」，就跳過這一步）', ['pageBtn','切換鏡頭'], { skip:'oneCam' }),
       ],
       next:['hardware'], fail:'光線夠亮、也沒有東西擋住，畫面還是全黑，可能是鏡頭壞了，建議送修。' },
-    stuck:     { lv:'bad', name:'畫面卡住不動', verify:'camera',
-      what:'鏡頭有畫面，但畫面完全不會動，像一張照片。',
+    stuck:      { lv:'bad', basis:'unknown', name:'畫面完全沒有變化', verify:'camera',
+      what:'鏡頭一直有送出畫面，但每一張都一模一樣，像一張照片。可能是鏡頭沒有回應，網頁無法確認原因。',
       steps:[
         S('對著鏡頭揮揮手', '把手放在平板前面左右揮動，看下面的數字有沒有跳動。', ['wave'], { live:'move' }),
         S('重新開啟鏡頭', '點下面的「做好了，下一步」，網頁會自動把鏡頭關掉再打開。', ['autoRestart'], { action:'restart' }),
         ...RESTART,
       ],
       next:['hardware'] },
-    sleep:     { lv:'bad', name:'平板螢幕關掉了，或跑去用別的程式', verify:'confirm',
-      what:'平板螢幕自動關掉、或切到別的程式時，平板會自動把相機關掉。這是最常見的原因。把「自動關螢幕」關掉就好。',
+    sleep:      { lv:'bad', basis:'confirmed', name:'網頁被切到背景，鏡頭跟著被關掉', verify:'confirm',
+      what:'網頁一進入背景，平板一定會關掉相機（這是系統規定）。進入背景可能是螢幕關掉，也可能是切到別的程式，網頁無法分辨是哪一個。',
       steps: isIOS ? [
         Object.assign({}, openSettings),
         S('點左邊的「螢幕顯示與亮度」', '在左邊清單裡找到「螢幕顯示與亮度」，點一下。', iLeft('螢幕顯示與亮度')),
@@ -598,8 +619,8 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
         S('使用時不要切到別的程式', '用的時候讓這個畫面一直開著，不要按電源鍵關螢幕，也不要去開別的程式。', ['keepOpen']),
       ],
       next:['freeze'] },
-    freeze:    { lv:'bad', name:'平板為了省電把網頁暫停了', verify:'confirm',
-      what:'平板在省電時會把網頁暫停，鏡頭也會跟著停。接上充電器、關掉省電模式就好。',
+    freeze:     { lv:'bad', basis:'guess', name:'網頁有好幾秒完全停止執行', verify:'confirm',
+      what:'網頁沒有進入背景，卻有好幾秒完全沒有在執行。常見原因是平板省電或系統太忙，但網頁無法確認是哪一個。',
       steps: isIOS ? [
         S('接上充電器', '長時間使用時，請用平板的充電線接上插座。', ['charger']),
         Object.assign({}, openSettings),
@@ -611,37 +632,44 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
         S('點左邊的「電池」', '在清單裡找到「電池」，點一下。', aLeft('電池')),
         S('關掉「省電模式」', '「省電模式」的開關如果是開的，就點一下關掉。', aSet('電池', '電池', [{label:'省電模式', type:'toggle', on:true},{label:'背景使用限制'},{label:'更多電池設定'}], 0, '點一下關掉')),
       ] },
-    overlay:   { lv:'warn', name:'被通知、來電或其他畫面打斷', verify:'confirm',
-      what:'有通知、來電，或拉下了選單，蓋住了這個網頁，鏡頭就會暫停。打開「勿擾模式」可以避免。',
+    overlay:    { lv:'warn', basis:'guess', name:'網頁失去焦點後，鏡頭被暫停', verify:'confirm',
+      what:'網頁失去焦點，代表有東西蓋到畫面上：可能是通知、控制中心、來電或分割畫面，網頁無法知道是哪一種。',
       steps:[
         S('從右上角往下滑', isIOS ? '用一根手指，從螢幕「右上角」往下滑，會打開「控制中心」。' : '用一根手指，從螢幕最上面往下滑兩次，會打開快速設定。', ['ccOpen']),
         S('點月亮圖案，打開勿擾', isIOS ? '點有月亮圖案的「專注模式」，再點「勿擾模式」。' : '點有月亮圖案的「勿擾」，讓它變亮。', ['ccDnd', isIOS]),
         S('只開這個網頁', '不要讓兩個畫面並排，也不要開小視窗，讓這個網頁佔滿整個螢幕。', ['split']),
       ],
       next:['sleep'] },
-    heat:      { lv:'bad', name:'平板太燙或太忙', verify:'camera',
-      what:'平板太燙或同時開了太多程式時，會變慢甚至讓鏡頭卡住。先讓它休息一下。',
+    paused:    { lv:'warn', basis:'unknown', name:'鏡頭被系統暫停', verify:'confirm',
+      what:'系統暫停了鏡頭，網頁沒有看到其他線索。可能是通知、來電、多工畫面或系統本身，網頁無法分辨。',
       steps:[
-        S('讓平板降溫', '拿掉保護殼，先拔掉充電線，放在通風、沒有太陽照到的地方 5 分鐘。', ['heat']),
+        S('從右上角往下滑', isIOS ? '用一根手指，從螢幕「右上角」往下滑，會打開「控制中心」。' : '用一根手指，從螢幕最上面往下滑兩次，會打開快速設定。', ['ccOpen']),
+        S('點月亮圖案，打開勿擾', isIOS ? '點有月亮圖案的「專注模式」，再點「勿擾模式」。' : '點有月亮圖案的「勿擾」，讓它變亮。', ['ccDnd', isIOS]),
+        S('只開這個網頁', '不要讓兩個畫面並排，也不要開小視窗，讓這個網頁佔滿整個螢幕。', ['split']),
+      ] },
+    heat:       { lv:'bad', basis:'unknown', name:'畫面停止更新', verify:'camera',
+      what:'鏡頭沒有被關掉，但畫面不再更新。可能是平板過熱、太忙或記憶體不足。網頁量不到溫度，也看不到其他程式，所以原因不知道。',
+      steps:[
+        S('摸摸看平板背面', '網頁量不到溫度，請用手摸摸看。如果很燙：拿掉保護殼、先拔掉充電線，放在通風的地方 5 分鐘。不燙就直接下一步。', ['heat']),
         ...CLOSE_APPS,
       ] },
-    lowfps:    { lv:'warn', name:'畫面變慢了（平板可能太燙）', verify:'camera',
-      what:'畫面更新變得很慢，平板可能太燙了。現在處理，可以避免等一下鏡頭斷掉。',
+    lowfps:     { lv:'warn', basis:'unknown', name:'畫面更新變慢', verify:'camera',
+      what:'畫面每秒更新的張數掉到平常一半以下。可能是平板過熱或太忙，但網頁量不到溫度，原因不知道。',
       steps:[
-        S('讓平板降溫', '摸摸看平板背面，如果很燙：拿掉保護殼、先拔掉充電線，放在通風的地方。', ['heat']),
+        S('摸摸看平板背面', '網頁量不到溫度，請用手摸摸看。如果很燙：拿掉保護殼、先拔掉充電線，放在通風的地方。不燙就直接下一步。', ['heat']),
         ...CLOSE_APPS,
       ],
       next:['heat'] },
-    device:    { lv:'warn', name:'外接設備鬆掉或變動', verify:'camera',
-      what:'平板接的外接鏡頭、底座或藍牙設備有變動，鏡頭因此被中斷。',
+    device:     { lv:'warn', basis:'confirmed', name:'系統通知：相機裝置有變動', verify:'camera',
+      what:'系統發出「相機裝置有變動」的通知，通常是外接鏡頭、底座或藍牙設備接上或拔掉。',
       steps:[
         S('檢查外接設備', '如果平板有接外接鏡頭或底座，看看接頭有沒有插好。也可以先拔掉，只用平板自己的鏡頭試試。', ['cable']),
       ] },
-    constraint:{ lv:'warn', name:'鏡頭畫質已自動調整', verify:'camera',
-      what:'鏡頭不支援預設的畫質，網頁已經自動改用適合的畫質，通常不需要處理。',
-      steps:[ S('換另一個鏡頭試試', '如果鏡頭還是打不開，點「前鏡頭」選單改成「後鏡頭」。', ['pageBtn','前鏡頭']) ] },
-    system:    { lv:'bad', name:'鏡頭被平板關掉了（原因不明）', verify:'camera',
-      what:'平板把鏡頭關掉了，但沒有看到明顯的原因。先重新開機，並把系統更新到最新版本。',
+    constraint: { lv:'warn', basis:'confirmed', name:'鏡頭不支援預設畫質，已自動調整', verify:'camera',
+      what:'系統回報鏡頭不支援預設的畫質，網頁已經自動改用鏡頭支援的畫質。',
+      steps:[ S('換另一個鏡頭試試', '通常不需要處理。如果鏡頭還是打不開，點影片下面的鏡頭選單，換成另一個鏡頭。', ['pageBtn','切換鏡頭']) ] },
+    system:     { lv:'bad', basis:'unknown', name:'鏡頭被系統結束', verify:'camera',
+      what:'系統把鏡頭關掉了，但網頁沒有看到任何其他線索，原因不知道。',
       steps:[ ...RESTART, ...UPDATE, S('記下斷掉的時間', '如果還是會斷，記下大概幾點斷掉，連同檢測報告一起傳給客服。', ['note']) ],
       next:['busy','sleep','heat'] },
   };
@@ -652,8 +680,8 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   let segStart = 0, longest = 0, drops = 0, testStart = 0;
   let frames = 0, lastFrameAt = 0, frozen = false, lastMediaTime = -1;
   let fpsHist = [], baselineFps = 0, lowFpsSecs = 0, lowFpsFlag = false;
-  let lastTick = Date.now(), isCharging = null;
-  let pendingDiag = null, failSince = 0, hwFlagged = false, useBasic = false;
+  let lastTick = Date.now(), isCharging = null, batteryKnown = false, lastFps = 0;
+  let pendingDiag = null, failSince = 0, failCount = 0, hwFlagged = false, useBasic = false;
   let blackSecs = 0, blackFlag = false, stillSecs = 0, stillFlag = false, prevPix = null;
   let logLines = [], causeCount = {};
   const signals = [];
@@ -692,15 +720,25 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   function setBadge(state, text){ $('badge').className = 'badge ' + state; $('badgeText').textContent = text; }
 
   // ===== 問題面板 =====
+  // 標題 = 實際偵測到的現象；「實際偵測到」只列量到的數據；原因分成 已確認 / 推測 / 不知道
+  const hms = (t = Date.now()) => { const d = new Date(t); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; };
+  const BASIS = { confirmed:'原因：已確認', guess:'原因：推測', unknown:'原因：不知道' };
   let currentProblem = null;
-  function showProblem(key, conf, evidence){
-    const c = CAUSES[key];
+  function showProblem(key, evidence, basis){
+    const c = CAUSES[key]; basis = basis || c.basis;
     currentProblem = key; $('guideBtn').hidden = false;
     $('problem').className = 'problem ' + c.lv;
     $('pTitle').textContent = c.name;
-    $('pConf').hidden = !conf; $('pConf').textContent = conf ? '判斷：' + conf : '';
+    $('pConf').hidden = false; $('pConf').className = 'pill ' + basis; $('pConf').textContent = BASIS[basis];
     $('pWhat').textContent = c.what;
-    $('pWhy').hidden = !evidence; $('pWhy').textContent = evidence ? '依據：' + evidence + '　（' + clock() + '）' : '';
+    const ev = Array.isArray(evidence) ? evidence : evidence ? [evidence] : [];
+    const w = $('pWhy'); w.innerHTML = ''; w.hidden = !ev.length;
+    if (ev.length){
+      const h = document.createElement('b'); h.textContent = '實際偵測到';
+      const ul = document.createElement('ul');
+      ev.forEach(x => { const li = document.createElement('li'); li.textContent = x; ul.append(li); });
+      w.append(h, ul);
+    }
     const ol = $('pSteps'); ol.innerHTML = '';
     c.steps.forEach(s => { const li = document.createElement('li'); li.textContent = stepText(s); ol.append(li); });
     ol.hidden = false; $('pStepsH').hidden = false;
@@ -715,10 +753,12 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
     showOk('鏡頭運作正常', drops ? `本次已中斷 ${drops} 次。` + (last ? '上一次：' + last.m.replace('➜ ','') : '') : '持續監測中，有問題會在這裡顯示。');
   }
 
-  function record(key, conf, evidence){
+  function record(key, evidence, basis){
+    const ev = Array.isArray(evidence) ? evidence : [evidence];
+    basis = basis || CAUSES[key].basis;
     causeCount[key] = (causeCount[key] || 0) + 1;
-    log(`➜ ${CAUSES[key].name}（${conf}）｜${evidence}`, 'diagline');
-    showProblem(key, conf, evidence); renderCauses(); save();
+    log(`➜ ${CAUSES[key].name}｜${BASIS[basis]}｜偵測到：${ev.join('；')}`, 'diagline');
+    showProblem(key, ev, basis); renderCauses(); save();
   }
   function renderCauses(){
     const el = $('causes'); el.innerHTML = '';
@@ -732,31 +772,40 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
     });
   }
 
-  // ===== 中斷原因推測 =====
-  function diagnose(kind){
-    const W = 15000, ev = [];
-    let key, conf = '可能';
-    const gaps = fresh('gap', W), lowF = fresh('lowfps', 60000);
-    if (fresh('perm-off', W).length){ key='perm'; conf='高度確定'; ev.push('中斷前相機權限被變更'); }
-    else if (kind === 'black'){ key='black'; conf='高度確定'; ev.push('畫面平均亮度接近 0 超過 5 秒'); }
-    else if (kind === 'stuck'){ key='stuck'; conf='很可能'; ev.push('畫面持續送出但內容 15 秒完全沒變'); }
-    else if (kind === 'resumeDead' || fresh('hidden', W).length){ key='sleep'; conf='高度確定'; ev.push('中斷前頁面進入背景或螢幕關閉'); }
-    else if (gaps.length){ key='freeze'; conf='很可能'; ev.push(`頁面曾停止運作 ${Math.round(gaps[gaps.length-1].info/1000)} 秒`); }
-    else if (fresh('device', W).length){ key='device'; conf='很可能'; ev.push('中斷前相機裝置清單有變動'); }
-    else if (kind === 'frozen' || lowF.length){
-      key='heat'; conf = kind === 'frozen' && lowF.length ? '很可能' : '可能';
-      if (lowF.length) ev.push(`中斷前 FPS 從約 ${baselineFps} 掉到 ${lowF[lowF.length-1].info}`);
-      if (kind === 'frozen') ev.push('串流沒斷但畫面停止更新');
-      if (isCharging) ev.push('當時正在充電');
+  // ===== 中斷原因判斷（只用實際量到的訊號）=====
+  function diagnose(kind, info = {}){
+    const W = 15000, now = Date.now(), ev = [];
+    const lastOf = (type, ms) => { const a = fresh(type, ms); return a[a.length - 1]; };
+    const perm = lastOf('perm-off', W), hid = lastOf('hidden', W), gap = lastOf('gap', W),
+          dev = lastOf('device', W), blur = lastOf('blur', W), low = lastOf('lowfps', 60000);
+    let key;
+    if (perm){ key = 'perm'; ev.push(`${hms(perm.t)} 相機權限變成「${perm.info}」`); }
+    else if (kind === 'black'){ key = 'black'; ev.push(`畫面平均亮度 ${info.luma}（0 是全黑、255 是全白），連續 ${info.secs} 秒`); }
+    else if (kind === 'stuck'){ key = 'stuck'; ev.push(`畫面持續送出（每秒 ${info.fps} 張），但連續 ${info.secs} 秒每一張都一模一樣`); }
+    else if (kind === 'resumeDead' || hid){
+      key = 'sleep';
+      const h = hid || recent('hidden', 86400000).pop();
+      if (h) ev.push(`${hms(h.t)} 網頁進入背景`);
     }
-    else if (fresh('blur', W).length){ key='overlay'; conf='可能'; ev.push('中斷前頁面失去焦點但沒進背景'); }
-    else { key = kind === 'mute' ? 'overlay' : 'system'; conf='無法確定';
-      ev.push(kind === 'mute' ? '系統暫停了畫面，沒有其他前兆' : '鏡頭被系統結束，沒有其他前兆'); }
-    if (fresh('unplug', W).length) ev.push('中斷前剛拔除電源');
-    return { key, conf, ev };
+    else if (gap){ key = 'freeze'; ev.push(`${hms(gap.t - gap.info)} 到 ${hms(gap.t)}，網頁有 ${Math.round(gap.info/1000)} 秒完全沒有執行（網頁沒有進入背景）`); }
+    else if (dev){ key = 'device'; ev.push(`${hms(dev.t)} 系統通知相機裝置有變動` + (dev.info !== '' ? `，變動後共 ${dev.info} 個鏡頭` : '')); }
+    else if (kind === 'frozen' || low){
+      key = 'heat';
+      if (low) ev.push(`平常每秒約 ${baselineFps} 張畫面，${hms(low.t)} 起掉到每秒 ${low.info} 張`);
+    }
+    else if (blur){ key = 'overlay'; ev.push(`${hms(blur.t)} 網頁失去焦點（沒有進入背景）`); }
+    else key = kind === 'mute' ? 'paused' : 'system';
+
+    const what = { ended:'系統結束了鏡頭', mute:'系統暫停了鏡頭', frozen:`鏡頭沒有被關掉，但已經 ${info.secs} 秒沒有新畫面`,
+                   resumeDead:'回到網頁時，鏡頭已經被關掉', black:'', stuck:'' }[kind];
+    if (what) ev.push(`${hms(now)} ${what}`);
+    const unplug = lastOf('unplug', W); if (unplug) ev.push(`${hms(unplug.t)} 拔除電源（電池資訊）`);
+    const mh = lastOf('mem-high', 60000); if (mh) ev.push(`${hms(mh.t)} 網頁記憶體使用 ${mh.info}%`);
+    if (key === 'heat' && batteryKnown) ev.push(`當時${isCharging ? '正在' : '沒有'}充電（電池資訊）`);
+    return { key, ev };
   }
 
-  function markDrop(kind, label){
+  function markDrop(kind, label, info){
     if (lastDropAt && Date.now() - lastDropAt < 5000 && kind !== 'black' && kind !== 'stuck'){
       if (segStart) { longest = Math.max(longest, Date.now()-segStart); segStart = 0; }
       setBadge('bad', '中斷：' + label);
@@ -768,57 +817,98 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
     drops++; $('sDrops').textContent = drops; $('sLong').textContent = fmtDur(longest);
     setBadge('bad', '中斷：' + label);
     log('⚠ 鏡頭中斷 — ' + label, 'bad');
-    const d = diagnose(kind);
+    const d = diagnose(kind, info);
     lastDropAt = Date.now();
     if ((d.key === 'system' || d.key === 'overlay') && kind === 'ended' && $('autoRe').checked){
       pendingDiag = d;   // 等重連結果，可區分「被占用」
-      setTimeout(() => { if (pendingDiag === d){ pendingDiag = null; record(d.key, d.conf, d.ev.join('；')); } }, 6000);
-    } else record(d.key, d.conf, d.ev.join('；'));
+      setTimeout(() => { if (pendingDiag === d){ pendingDiag = null; record(d.key, d.ev); } }, 6000);
+    } else record(d.key, d.ev);
   }
 
   // ===== 開鏡頭與錯誤對應 =====
+  // 系統回報的錯誤代碼 → 問題類型、系統原話（照實寫，不加推測）
   const ERR = {
-    NotAllowedError:     ['perm',      '高度確定', '系統拒絕相機權限'],
-    SecurityError:       ['insecure',  '高度確定', '安全性限制，無法使用相機'],
-    NotFoundError:       ['missing',   '高度確定', '系統回報沒有可用的鏡頭'],
-    OverconstrainedError:['constraint','高度確定', '鏡頭不支援指定的畫質'],
-    NotReadableError:    ['busy',      '很可能',   '系統回報相機正在被使用或無法讀取'],
-    AbortError:          ['busy',      '可能',     '開啟鏡頭被系統中止'],
-    TypeError:           ['nosupport', '很可能',   '瀏覽器不接受相機請求'],
-    NotSupportedError:   ['nosupport', '很可能',   '瀏覽器不支援這個相機請求'],
+    NotAllowedError:     ['perm',       '不允許使用相機'],
+    SecurityError:       ['insecure',   '安全性限制，不能使用相機'],
+    NotFoundError:       ['missing',    '找不到鏡頭'],
+    OverconstrainedError:['constraint', '鏡頭不支援要求的畫質'],
+    NotReadableError:    ['busy',       '相機無法讀取'],
+    AbortError:          ['busy',       '開啟相機被中止'],
+    TypeError:           ['nosupport',  '瀏覽器不接受相機請求'],
+    NotSupportedError:   ['nosupport',  '瀏覽器不支援這個相機請求'],
   };
+
+
+  // ===== 鏡頭清單（讀取裝置實際有的鏡頭）=====
+  let camId = '', camCount = -1;
+  function camName(label, i){
+    const l = (label || '').replace(/\s*\([0-9a-f]{4}:[0-9a-f]{4}\)/i, '').trim();
+    if (!l) return '鏡頭 ' + (i + 1) + '（系統未提供名稱）';
+    const extra = /ultra ?wide|超廣角/i.test(l) ? '（超廣角）' : /tele|望遠/i.test(l) ? '（望遠）' : '';
+    if (/front|前置|前鏡頭/i.test(l)) return '前鏡頭' + extra;       // 系統名稱明確寫「前」
+    if (/back|rear|後置|後鏡頭/i.test(l)) return '後鏡頭' + extra;   // 系統名稱明確寫「後」
+    return l;                                                         // 其他照系統給的名稱
+  }
+  async function refreshCamSelect(){
+    const sel = $('camSel');
+    let list = [];
+    try { list = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput'); } catch(_){}
+    camCount = list.length;
+    const curId = track?.getSettings().deviceId || camId;
+    sel.innerHTML = '';
+    const used = {};
+    list.forEach((d, i) => {
+      let n = camName(d.label, i); used[n] = (used[n] || 0) + 1; if (used[n] > 1) n += ' ' + used[n];
+      const o = document.createElement('option'); o.value = d.deviceId; o.textContent = n; o.title = d.label;
+      if (d.deviceId === curId) o.selected = true;
+      sel.append(o);
+    });
+    if (list.length <= 1){
+      sel.disabled = true;
+      if (list.length === 1) sel.options[0].textContent = '只有一個鏡頭：' + camName(list[0].label, 0);
+      else { const o = document.createElement('option'); o.textContent = '找不到鏡頭'; sel.append(o); }
+    } else sel.disabled = false;
+    const n = $('iCams'); n.textContent = list.length + ' 個' + (list.some(d=>d.label) ? '：' + [...sel.options].map(o=>o.textContent.replace('只有一個鏡頭：','')).join('、') : '');
+    return list.length;
+  }
 
   async function start(){
     if (!navigator.mediaDevices?.getUserMedia){
-      record(window.isSecureContext ? 'nosupport' : 'insecure', '高度確定', '瀏覽器沒有提供相機功能');
+      record(window.isSecureContext ? 'nosupport' : 'insecure', [window.isSecureContext ? '瀏覽器沒有提供相機功能（mediaDevices 不存在）' : '網址：' + location.href]);
       setBadge('bad','無法使用'); return;
     }
     if (document.visibilityState === 'hidden'){ log('頁面在背景，等回到頁面再重新開啟鏡頭'); return; }
     stopStream(true);
-    const constraints = useBasic ? { video:true, audio:false }
-      : { video:{ facingMode:$('camSel').value, width:{ideal:1280}, height:{ideal:720} }, audio:false };
+    const pick = camId ? { deviceId:{ exact: camId } } : { facingMode:'user' };
+    const constraints = useBasic ? { video: camId ? pick : true, audio:false }
+      : { video:{ ...pick, width:{ideal:1280}, height:{ideal:720} }, audio:false };
     try{
       stream = await navigator.mediaDevices.getUserMedia(constraints);
     }catch(e){
-      const [key, conf, txt] = ERR[e.name] || ['system', '無法確定', e.name + ' ' + e.message];
+      const [key, txt] = ERR[e.name] || ['system', e.message || '未知錯誤'];
       log(`開啟失敗：${txt}（${e.name}）`, 'bad'); setBadge('bad','開啟失敗');
-      if (!failSince) failSince = Date.now();
+      if (!failSince){ failSince = Date.now(); failCount = 0; }
+      failCount++;
+      const sysSaid = `${hms()} 開啟鏡頭，系統回報：${txt}（${e.name}）`;
 
-      if (key === 'constraint' && !useBasic){ useBasic = true; record('constraint', conf, txt); return start(); }
+      if (camId && (e.name === 'OverconstrainedError' || e.name === 'NotFoundError')){
+        log('選擇的鏡頭已經不存在（可能被拔掉），改用預設鏡頭', 'warn'); camId = ''; sig('device'); return start();
+      }
+      if (key === 'constraint' && !useBasic){ useBasic = true; record('constraint', [sysSaid]); return start(); }
 
       if (pendingDiag){
         const d = pendingDiag; pendingDiag = null;
-        d.ev.push('重新開啟時：' + txt);
-        record(key === 'system' ? d.key : key, conf, d.ev.join('；'));
+        d.ev.push(sysSaid);
+        record(key === 'system' ? d.key : key, d.ev);
         sig('fail-' + key);
       } else if (!recent('fail-' + key, 30000).length && !(hwFlagged && (key === 'busy' || key === 'system'))) {
-        record(key, conf, txt); sig('fail-' + key);
+        record(key, [sysSaid]); sig('fail-' + key);
       }
 
       // 長時間開不了 → 升級為疑似硬體故障
       if ((key === 'busy' || key === 'system') && !hwFlagged && Date.now() - failSince > 60000){
         hwFlagged = true;
-        record('hardware', '可能', `已連續 ${Math.round((Date.now()-failSince)/1000)} 秒無法開啟鏡頭`);
+        record('hardware', [`${hms(failSince)} 到 ${hms()}，連續 ${Math.round((Date.now()-failSince)/1000)} 秒、試了 ${failCount} 次都無法啟動鏡頭`, `最後一次系統回報：${txt}（${e.name}）`]);
       }
       const retryable = ['busy','system','missing'].includes(key);
       if (running && $('autoRe').checked && retryable) setTimeout(() => running && start(), 4000);
@@ -826,7 +916,7 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
       return;
     }
 
-    if (pendingDiag){ const d = pendingDiag; pendingDiag = null; d.ev.push('重新開啟正常'); record(d.key, d.conf, d.ev.join('；')); }
+    if (pendingDiag){ const d = pendingDiag; pendingDiag = null; d.ev.push(`${hms()} 重新開啟鏡頭成功`); record(d.key, d.ev); }
     if (failSince){ log(`鏡頭恢復（失敗持續 ${Math.round((Date.now()-failSince)/1000)} 秒）`, 'ok'); }
     failSince = 0; hwFlagged = false;
 
@@ -843,7 +933,11 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
     fpsHist = []; baselineFps = 0; lowFpsSecs = 0; lowFpsFlag = false;
     blackSecs = 0; blackFlag = false; stillSecs = 0; stillFlag = false; prevPix = null;
     setBadge('ok','運作中'); log('鏡頭啟動：' + (track.label||'') + ' ' + $('iRes').textContent, 'ok');
-    recovered(); requestWake(); countCams();
+    recovered(); requestWake();
+    await refreshCamSelect();
+    camId = s.deviceId || camId;
+    const shown = $('camSel').selectedOptions[0]?.textContent || '';
+    log(`使用中的鏡頭：${shown.replace('只有一個鏡頭：','')}（裝置共有 ${camCount} 個鏡頭）`);
   }
 
   function stopStream(silent){
@@ -892,14 +986,14 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
       if (blackFlag){ blackFlag = false; segStart = Date.now(); log('畫面亮度恢復', 'ok'); setBadge('ok','運作中'); recovered(); }
       blackSecs = 0;
     }
-    if (blackSecs >= 5 && !blackFlag){ blackFlag = true; markDrop('black','畫面全黑'); }
+    if (blackSecs >= 5 && !blackFlag){ blackFlag = true; markDrop('black','畫面全黑', { luma: Math.round(luma), secs: blackSecs }); }
 
     // 完全靜止（每個像素都一模一樣 → 感光元件沒回應）
     if (hadPrev && changed === 0 && luma >= 8){ stillSecs++; } else {
       if (stillFlag){ stillFlag = false; segStart = Date.now(); log('畫面恢復變化', 'ok'); setBadge('ok','運作中'); recovered(); }
       stillSecs = 0;
     }
-    if (stillSecs >= 15 && !stillFlag){ stillFlag = true; markDrop('stuck','畫面完全靜止'); }
+    if (stillSecs >= 15 && !stillFlag){ stillFlag = true; markDrop('stuck','畫面完全沒有變化', { secs: stillSecs, fps: lastFps }); }
   }
 
   // ===== 幀監測 =====
@@ -916,7 +1010,7 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
     const gap = now - lastTick; lastTick = now;
     if (running && gap > 5000){ sig('gap', gap); log(`頁面停止運作了 ${Math.round(gap/1000)} 秒（裝置休眠或系統凍結頁面）`, 'warn'); }
 
-    const fps = frames; frames = 0;
+    const fps = frames; frames = 0; lastFps = fps;
     const live = running && track && track.readyState === 'live' && !track.muted && document.visibilityState === 'visible';
     $('sFps').textContent = live ? fps : '–';
 
@@ -935,16 +1029,18 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
         lowFpsSecs = low ? lowFpsSecs + 1 : 0;
         if (lowFpsSecs >= 10 && !lowFpsFlag){
           lowFpsFlag = true; sig('lowfps', fps);
-          record('lowfps', '很可能', `FPS 從約 ${baselineFps} 掉到 ${fps}，持續 10 秒` + (isCharging ? '；正在充電' : ''));
+          record('lowfps', [`平常每秒約 ${baselineFps} 張畫面`, `${hms(now - 10000)} 到 ${hms(now)}，掉到每秒 ${fps} 張，持續 10 秒`]
+            .concat(batteryKnown ? [`當時${isCharging ? '正在' : '沒有'}充電（電池資訊）`] : []));
           setBadge('warn','畫面變慢');
         }
         if (!low && lowFpsFlag && fps >= baselineFps * 0.8){ lowFpsFlag = false; log(`FPS 回復至 ${fps}`, 'ok'); setBadge('ok','運作中'); recovered(); }
       }
     }
-    if (live && !frozen && performance.now() - lastFrameAt > 3000){ frozen = true; markDrop('frozen','畫面凍結超過 3 秒'); }
+    if (live && !frozen && performance.now() - lastFrameAt > 3000){ frozen = true; markDrop('frozen','畫面停止更新', { secs: Math.round((performance.now() - lastFrameAt)/1000) }); }
 
     if (running) $('timer').textContent = fmtDur(now - testStart);
     if (running && segStart) $('sLong').textContent = fmtDur(Math.max(longest, now-segStart));
+    if (running && now % 5000 < 1000) { try { sessionStorage.setItem('camtest-run', String(now)); } catch(_){} }
     if (running && now - testStart > 1000 && (now - testStart) % 600000 < 1000)
       log(`定時回報：已運作 ${fmtDur(now - testStart)}，中斷 ${drops} 次`);
   }, 1000);
@@ -963,15 +1059,15 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   });
   window.addEventListener('blur', () => { if (running){ sig('blur'); log('頁面失去焦點（通知、控制中心、來電或多工）'); } });
   window.addEventListener('focus', () => { if (running) log('頁面取回焦點'); });
-  window.addEventListener('pagehide', () => { if (running) log('頁面被關閉或重新整理','warn'); });
+  window.addEventListener('pagehide', () => { try { sessionStorage.setItem('camtest-clean', '1'); } catch(_){} if (running) log('頁面被關閉或重新整理','warn'); });
   window.addEventListener('orientationchange', () => { if (running) log('螢幕方向改變'); });
   window.addEventListener('offline', () => { if (running) log('網路中斷（不影響鏡頭，但可能影響使用中的服務）','warn'); });
   window.addEventListener('online', () => { if (running) log('網路恢復'); });
   navigator.mediaDevices?.addEventListener?.('devicechange', async () => {
     if (!running) return;
-    sig('device'); const n = await countCams();
+    const n = await refreshCamSelect(); sig('device', n);
     log(`相機裝置清單變更，目前 ${n} 個鏡頭`, 'warn');
-    if (n === 0) record('missing', '高度確定', '鏡頭從系統裝置清單中消失');
+    if (n === 0) record('missing', [`${hms()} 系統的鏡頭清單變成 0 個`]);
   });
 
   // ===== 環境檢查 =====
@@ -981,7 +1077,7 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
     const el = $('checks'); el.innerHTML = '';
     Object.values(checks).forEach(c => {
       const d = document.createElement('div'); d.className = 'chk-item ' + c.state;
-      const ic = document.createElement('div'); ic.className = 'ic'; ic.textContent = c.state === 'pass' ? '✓' : c.state === 'warn' ? '!' : c.state === 'fail' ? '✕' : '…';
+      const ic = document.createElement('div'); ic.className = 'ic'; ic.textContent = c.state === 'pass' ? '✓' : c.state === 'warn' ? '!' : c.state === 'fail' ? '✕' : '–';
       const t = document.createElement('div'); const b = document.createElement('b'); b.textContent = c.title;
       const s = document.createElement('span'); s.textContent = c.note; t.append(b, s);
       d.append(ic, t); el.append(d);
@@ -1023,19 +1119,22 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
         };
         upd();
         if (p.state === 'denied' && !preflightBlock) preflightBlock = 'perm';
-        p.onchange = () => { upd(); if (running){ if (p.state !== 'granted') sig('perm-off'); log('相機權限變更：' + (t[p.state]||p.state), 'warn'); } };
+        p.onchange = () => { upd(); if (running){ if (p.state !== 'granted') sig('perm-off', t[p.state] || p.state); log('相機權限變更：' + (t[p.state]||p.state), 'warn'); } };
       } catch(_) { $('iPerm').textContent = '無法查詢'; setCheck('perm', 'warn', '相機權限', '開始檢測後才能確認'); }
     } else { $('iPerm').textContent = '無法查詢'; setCheck('perm', 'warn', '相機權限', '開始檢測後才能確認'); }
 
+    if (MEM){
+      setCheck('mem', MEM <= 2 ? 'warn' : 'pass', '記憶體', `約 ${MEM} GB（瀏覽器提供的約略值${MEM <= 2 ? '，偏小' : ''}）`);
+    } else setCheck('mem', 'na', '記憶體', isIOS ? 'iPad 不提供這項資訊' : '這個瀏覽器不提供這項資訊');
     const wake = 'wakeLock' in navigator;
     setCheck('wake', wake ? 'pass' : 'warn', '螢幕常亮', wake ? '支援，檢測時自動開啟' : '不支援，請手動關閉自動鎖定');
 
     if (navigator.getBattery){
       try {
-        const b = await navigator.getBattery(); isCharging = b.charging;
+        const b = await navigator.getBattery(); isCharging = b.charging; batteryKnown = true;
         const upd = () => {
           $('iBatt').textContent = Math.round(b.level*100) + '%' + (b.charging ? '（充電中）' : '');
-          setCheck('batt', b.level < 0.2 && !b.charging ? 'warn' : 'pass', '電量', $('iBatt').textContent + (b.level < 0.2 && !b.charging ? '，電量低可能觸發省電' : ''));
+          setCheck('batt', b.level < 0.2 && !b.charging ? 'warn' : 'pass', '電量', $('iBatt').textContent + (b.level < 0.2 && !b.charging ? '，低於 20%' : ''));
         };
         upd();
         b.onlevelchange = upd;
@@ -1043,16 +1142,30 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
       } catch(_) { $('iBatt').textContent = '無法讀取'; }
     } else {
       $('iBatt').textContent = '無法讀取（iPad 不提供）';
-      setCheck('batt', 'warn', '電量 / 省電', '無法讀取，請確認已關閉低耗電模式');
+      setCheck('batt', 'na', '電量', '這個瀏覽器不提供（iPad 都不提供）');
     }
 
-    if (preflightBlock) showProblem(preflightBlock, '高度確定', '開始前的環境檢查');
+    if (preflightBlock){
+      const pe = { insecure:'網址：' + location.href, inapp:'瀏覽器識別：' + BROWSER.name, unsupported:'瀏覽器識別：' + BROWSER.name,
+                   nosupport:'瀏覽器沒有提供相機功能', missing:'系統的鏡頭清單是 0 個', perm:'相機權限狀態：已拒絕' }[preflightBlock];
+      showProblem(preflightBlock, ['開始前的環境檢查：' + pe]);
+    }
     else showOk('環境檢查通過', '按「開始檢測」並允許使用相機。');
   }
 
   $('iUA').textContent = UA;
   $('iBrowser').textContent = BROWSER.name + (BROWSER.ok ? '（支援）' : '（不支援）');
-  $('iHw').textContent = `CPU ${navigator.hardwareConcurrency || '?'} 核` + (navigator.deviceMemory ? `，記憶體約 ${navigator.deviceMemory} GB` : '');
+  const hwBase = `CPU ${navigator.hardwareConcurrency || '?'} 核` + (MEM ? `，記憶體約 ${MEM} GB` : '，記憶體無法讀取');
+  $('iHw').textContent = hwBase;
+  let heapWarned = false;
+  function memTick(){
+    const m = performance.memory; if (!m || !m.jsHeapSizeLimit) return;
+    const used = m.usedJSHeapSize / 1048576, pct = m.usedJSHeapSize / m.jsHeapSizeLimit;
+    $('iHw').textContent = hwBase + `，網頁使用 ${used.toFixed(0)} MB`;
+    if (running && pct > 0.8 && !heapWarned){ heapWarned = true; log(`⚠ 網頁記憶體使用偏高（${Math.round(pct*100)}%），可能很快會被系統關掉`, 'warn'); sig('mem-high', Math.round(pct*100)); }
+    if (pct < 0.6) heapWarned = false;
+  }
+  memTick(); setInterval(memTick, 10000);
 
   // ===== 引導解決 =====
   const G = { key:null, i:0, mode:'step', timer:null };
@@ -1071,6 +1184,9 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
     $('guide').hidden = true; document.body.style.overflow = '';
   }
 
+  const skipStep = st => st.skip === 'oneCam' && camCount === 1;
+  const nextIdx = (c, i) => { for (let k = i + 1; k < c.steps.length; k++) if (!skipStep(c.steps[k])) return k; return -1; };
+  const prevIdx = (c, i) => { for (let k = i - 1; k >= 0; k--) if (!skipStep(c.steps[k])) return k; return -1; };
   function renderGuide(){
     const c = CAUSES[G.key];
     $('gProb').textContent = '正在處理：' + c.name;
@@ -1086,12 +1202,12 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
       if (s.d) body.append(el('p', 'g-desc', s.d));
       const ill = illustration(s);
       if (ill){ ill.style.marginTop = '12px'; body.append(ill); }
-      if (G.i > 0) act.append(btn('上一步', 'grow', () => { G.i--; renderGuide(); }));
+      if (prevIdx(c, G.i) >= 0) act.append(btn('上一步', 'grow', () => { G.i = prevIdx(c, G.i); renderGuide(); }));
       else act.append(btn('先不要', 'grow', () => { closeGuide(); }));
-      const last = G.i === c.steps.length - 1;
+      const last = nextIdx(c, G.i) === -1;
       act.append(btn(last ? '做好了，幫我測試' : '做好了，下一步', 'primary', async () => {
         if (s.action === 'restart'){ log('引導：重新開啟鏡頭'); if (running) await start(); else $('startBtn').click(); }
-        if (last) verifyGuide(); else { G.i++; renderGuide(); }
+        if (last) verifyGuide(); else { G.i = nextIdx(c, G.i); renderGuide(); }
       }));
       if (s.live) ensureCamera();
     }
@@ -1217,6 +1333,7 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   // ===== 按鈕 =====
   $('startBtn').onclick = async () => {
     running = true; testStart = Date.now(); drops = 0; longest = 0; lastTick = Date.now();
+    try { sessionStorage.setItem('camtest-run', String(Date.now())); sessionStorage.removeItem('camtest-clean'); } catch(_){}
     failSince = 0; hwFlagged = false; useBasic = false;
     $('sDrops').textContent = '0'; $('sLong').textContent = '–';
     $('startBtn').disabled = true; $('stopBtn').disabled = false;
@@ -1225,13 +1342,17 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   };
   $('stopBtn').onclick = () => {
     running = false; stopStream(false); pendingDiag = null;
+    try { sessionStorage.removeItem('camtest-run'); } catch(_){}
     if (wakeLock) { wakeLock.release().catch(()=>{}); wakeLock = null; }
     $('startBtn').disabled = false; $('stopBtn').disabled = true;
     setBadge('', '已停止');
     log(`— 停止檢測：共 ${fmtDur(Date.now()-testStart)}，中斷 ${drops} 次，最長連續 ${fmtDur(longest)} —`);
     if ($('problem').classList.contains('ok')) showOk('檢測已停止', `共 ${fmtDur(Date.now()-testStart)}，中斷 ${drops} 次。按「複製報告」可以把結果傳給客服。`);
   };
-  $('camSel').onchange = () => { if (running){ log('切換鏡頭'); useBasic = false; start(); } };
+  $('camSel').onchange = () => {
+    camId = $('camSel').value; useBasic = false;
+    if (running){ log('切換到：' + $('camSel').selectedOptions[0].textContent); start(); }
+  };
   $('clearBtn').onclick = () => {
     logLines = []; causeCount = {}; $('log').textContent = ''; renderCauses();
     try { localStorage.removeItem(STORE); } catch(_){}
@@ -1259,9 +1380,23 @@ dt{color:var(--muted)} dd{margin:0;font-family:var(--mono);font-variant-numeric:
   };
 
   restore();
+  // 上次檢測中，網頁沒有正常關閉就重新開始了 → 被系統關掉重開（多半是記憶體不足）
+  let killedDiag = null;
+  try {
+    const lastRun = +sessionStorage.getItem('camtest-run') || 0, clean = sessionStorage.getItem('camtest-clean');
+    sessionStorage.removeItem('camtest-clean');
+    if (document.wasDiscarded) killedDiag = [`${hms()} 瀏覽器回報：這個網頁先前被瀏覽器丟棄後重新載入`];
+    else if (lastRun && !clean) killedDiag = [`${hms(lastRun)} 最後一次確認檢測正常`, `${hms()} 網頁重新載入，中間沒有收到網頁被關閉的通知`];
+    else if (lastRun && clean) log('上次的檢測因為網頁被重新整理或關閉而中斷');
+    sessionStorage.removeItem('camtest-run');
+  } catch(_){}
   preflight().then(() => {
+    if (killedDiag){
+      log('⚠ 網頁被系統關掉後重新開啟', 'bad');
+      record('memory', killedDiag.concat(MEM ? [`裝置記憶體約 ${MEM} GB（瀏覽器提供的約略值）`] : ['裝置記憶體：瀏覽器不提供']));
+    }
     const g = new URLSearchParams(location.search).get('guide');
-    if (g && CAUSES[g]) { showProblem(g, '', ''); openGuide(g); }
+    if (g && CAUSES[g]) { showProblem(g, null); openGuide(g); }
   });
 })();
 </script>
